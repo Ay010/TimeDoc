@@ -1,6 +1,18 @@
-# TimeDoc
+<p align="center">
+  <img src="public/icon-readme.png" alt="TimeDoc" width="128" />
+</p>
 
-A Windows desktop app for tracking work hours and automatically generating invoices and timesheets as Word and Excel documents.
+<h1 align="center">TimeDoc</h1>
+
+<p align="center">
+  A Windows desktop app for tracking work hours and automatically generating invoices and timesheets as Word and Excel documents.
+</p>
+
+<p align="center">
+  <a href="../../releases"><img src="https://img.shields.io/github/v/release/Ay010/TimeDoc?style=flat-square" alt="Release" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Ay010/TimeDoc?style=flat-square" alt="License" /></a>
+  <a href="../../releases"><img src="https://img.shields.io/github/downloads/Ay010/TimeDoc/total?style=flat-square" alt="Downloads" /></a>
+</p>
 
 ## Features
 
@@ -20,6 +32,8 @@ Go to the [Releases](../../releases) page and download:
 
 - **TimeDoc Setup x.x.x.exe** — Installer (recommended)
 - **TimeDoc x.x.x.exe** — Portable version (no installation needed)
+
+> **Note:** Windows may show a SmartScreen warning ("Windows protected your PC") because the app is not code-signed. Click **"More info"** and then **"Run anyway"** to proceed. The app is open source — you can review the full source code in this repository.
 
 ## Development
 
