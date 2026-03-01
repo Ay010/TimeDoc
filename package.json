@@ -47,7 +47,8 @@
       {
         "provider": "github",
         "owner": "Ay010",
-        "repo": "TimeDoc"
+        "repo": "TimeDoc",
+        "releaseType": "release"
       }
     ],
     "directories": {

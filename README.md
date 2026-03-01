@@ -12,6 +12,7 @@ A Windows desktop app for tracking work hours and automatically generating invoi
 - **Backup System** — Automatic daily backups, manual backup creation, and export/import to USB or any folder
 - **Sensitive Data Protection** — IBAN and BIC are encrypted (AES-256-GCM) and optionally password-protected
 - **Portable Mode** — Run without installation, carry your data on a USB stick
+- **Auto-Update** — The app checks for updates on startup and installs them automatically
 
 ## Download
 
