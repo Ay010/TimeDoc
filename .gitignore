@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-electron/
+release/
+data/
+*.db
+.specstory/
+.encryption-key
+*.blockmap
+*.exe
