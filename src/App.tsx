@@ -12,6 +12,9 @@ type Tab = 'stunden' | 'vorlagen' | 'einstellungen' | 'backup'
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('stunden')
   const [showWelcome, setShowWelcome] = useState(false)
+  const [updateState, setUpdateState] = useState<'none' | 'downloading' | 'ready'>('none')
+  const [updateVersion, setUpdateVersion] = useState('')
+  const [updateProgress, setUpdateProgress] = useState(0)
   const loadEntries = useEntryStore((s) => s.loadEntries)
   const loadSettings = useSettingsStore((s) => s.loadSettings)
 
@@ -20,6 +23,18 @@ function App() {
     loadSettings()
     window.api.backup.hasData().then(has => {
       if (!has) setShowWelcome(true)
+    })
+
+    window.onUpdate.onAvailable((version) => {
+      setUpdateVersion(version)
+      setUpdateState('downloading')
+    })
+    window.onUpdate.onProgress((percent) => {
+      setUpdateProgress(percent)
+    })
+    window.onUpdate.onDownloaded((version) => {
+      setUpdateVersion(version)
+      setUpdateState('ready')
     })
   }, [])
 
@@ -86,6 +101,31 @@ function App() {
           ))}
         </nav>
       </header>
+
+      {updateState === 'downloading' && (
+        <div className="bg-blue-50 border-b border-blue-200 px-6 py-2 flex items-center gap-3 shrink-0">
+          <span className="text-sm text-blue-700">
+            Update v{updateVersion} wird heruntergeladen... {updateProgress}%
+          </span>
+          <div className="flex-1 h-1.5 bg-blue-200 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${updateProgress}%` }} />
+          </div>
+        </div>
+      )}
+
+      {updateState === 'ready' && (
+        <div className="bg-emerald-50 border-b border-emerald-200 px-6 py-2 flex items-center justify-between shrink-0">
+          <span className="text-sm text-emerald-700">
+            Update v{updateVersion} bereit — wird beim nächsten Neustart installiert.
+          </span>
+          <button
+            onClick={() => window.api.update.install()}
+            className="text-sm font-medium text-emerald-700 hover:text-emerald-900 underline"
+          >
+            Jetzt neu starten
+          </button>
+        </div>
+      )}
 
       <main className="flex-1 overflow-auto p-6">
         {activeTab === 'stunden' && <MonthView />}

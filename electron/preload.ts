@@ -1,5 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+contextBridge.exposeInMainWorld('onUpdate', {
+  onAvailable: (cb: (version: string) => void) => ipcRenderer.on('update:available', (_e, v) => cb(v)),
+  onProgress: (cb: (percent: number) => void) => ipcRenderer.on('update:progress', (_e, p) => cb(p)),
+  onDownloaded: (cb: (version: string) => void) => ipcRenderer.on('update:downloaded', (_e, v) => cb(v)),
+})
+
 contextBridge.exposeInMainWorld('api', {
   window: {
     minimize: () => ipcRenderer.invoke('window:minimize'),
@@ -50,5 +56,8 @@ contextBridge.exposeInMainWorld('api', {
     export: () => ipcRenderer.invoke('backup:export'),
     import: () => ipcRenderer.invoke('backup:import'),
     hasData: () => ipcRenderer.invoke('backup:hasData'),
+  },
+  update: {
+    install: () => ipcRenderer.invoke('update:install'),
   },
 })

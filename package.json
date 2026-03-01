@@ -14,6 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "docxtemplater": "^3.50.0",
+    "electron-updater": "^6.8.3",
     "exceljs": "^4.4.0",
     "pizzip": "^3.1.7",
     "react": "^18.3.1",
@@ -42,6 +43,13 @@
   "build": {
     "appId": "com.timedoc.app",
     "productName": "TimeDoc",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Ay010",
+        "repo": "TimeDoc"
+      }
+    ],
     "directories": {
       "output": "release"
     },

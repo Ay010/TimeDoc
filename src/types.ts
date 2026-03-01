@@ -30,6 +30,11 @@ export interface BackupInfo {
 
 declare global {
   interface Window {
+    onUpdate: {
+      onAvailable: (cb: (version: string) => void) => void
+      onProgress: (cb: (percent: number) => void) => void
+      onDownloaded: (cb: (version: string) => void) => void
+    }
     api: {
       window: {
         minimize: () => Promise<void>
@@ -76,6 +81,9 @@ declare global {
         export: () => Promise<{ success: boolean; path?: string; error?: string }>
         import: () => Promise<{ success: boolean }>
         hasData: () => Promise<boolean>
+      }
+      update: {
+        install: () => Promise<void>
       }
     }
   }

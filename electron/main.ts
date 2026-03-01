@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu } from 'electron'
 import path from 'path'
+import { autoUpdater } from 'electron-updater'
 import { initDatabase, getDatabase, saveDatabase } from './database'
 import { createBackup, restoreBackup, listBackups, autoBackup } from './backup'
 import { exportWord, exportExcel } from './document-engine'
@@ -84,6 +85,25 @@ function queryRun(sql: string, params: any[] = []): void {
   saveDatabase()
 }
 
+function setupAutoUpdater() {
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true
+
+  autoUpdater.on('update-available', (info) => {
+    mainWindow?.webContents.send('update:available', info.version)
+  })
+
+  autoUpdater.on('download-progress', (progress) => {
+    mainWindow?.webContents.send('update:progress', Math.round(progress.percent))
+  })
+
+  autoUpdater.on('update-downloaded', (info) => {
+    mainWindow?.webContents.send('update:downloaded', info.version)
+  })
+
+  autoUpdater.checkForUpdates().catch(() => {})
+}
+
 app.whenReady().then(async () => {
   const dataPath = ensureDataDirs()
   initEncryption(dataPath)
@@ -91,6 +111,10 @@ app.whenReady().then(async () => {
   autoBackup(dataPath)
   createWindow()
   registerIpcHandlers(dataPath)
+
+  if (!VITE_DEV_SERVER_URL) {
+    setupAutoUpdater()
+  }
 })
 
 app.on('window-all-closed', () => {
@@ -573,5 +597,9 @@ function done(v){document.title='PW:'+v}
     } catch {
       return false
     }
+  })
+
+  ipcMain.handle('update:install', () => {
+    autoUpdater.quitAndInstall(false, true)
   })
 }
