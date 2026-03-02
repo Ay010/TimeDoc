@@ -14,6 +14,7 @@ const de: Record<string, string> = {
   'tab.templates': 'Vorlagen & Export',
   'tab.settings': 'Einstellungen',
   'tab.backup': 'Backup',
+  'tab.contact': 'Kontakt',
 
   // Welcome
   'welcome.title': 'Willkommen bei TimeDoc!',
@@ -255,6 +256,27 @@ const de: Record<string, string> = {
   'customFields.nameExists': 'Ein Feld mit diesem Namen existiert bereits.',
   'customFields.nameRequired': 'Name ist erforderlich.',
 
+  // Contact
+  'contact.title': 'Kontaktiere uns',
+  'contact.subtitle': 'Wir freuen uns über dein Feedback! Teile uns Ideen, Probleme oder Verbesserungsvorschläge mit.',
+  'contact.name': 'Name',
+  'contact.namePlaceholder': 'Dein Name',
+  'contact.subject': 'Betreff',
+  'contact.message': 'Nachricht',
+  'contact.messagePlaceholder': 'Beschreibe dein Anliegen...',
+  'contact.send': 'E-Mail senden',
+  'contact.sendVia': 'Senden über',
+  'contact.hint': 'Wähle deinen bevorzugten E-Mail-Dienst.',
+  'contact.category.feedback': 'Feedback',
+  'contact.category.bug': 'Bug Report',
+  'contact.category.feature': 'Feature-Wunsch',
+  'contact.category.other': 'Sonstiges',
+  'contact.openForFeedback': 'Offen für Feedback',
+  'contact.to': 'An',
+  'contact.statusOpened': 'E-Mail wurde vorbereitet. Bitte sende sie ab.',
+  'contact.statusFallback': 'Kein E-Mail-Programm gefunden. Der Text wurde in die Zwischenablage kopiert. Sende ihn manuell an:',
+  'contact.directEmail': 'Oder schreib uns direkt an',
+
   // What's New
   'whatsNew.title': 'Neuigkeiten',
   'whatsNew.close': 'Schließen',
@@ -267,6 +289,7 @@ const en: Record<string, string> = {
   'tab.templates': 'Templates & Export',
   'tab.settings': 'Settings',
   'tab.backup': 'Backup',
+  'tab.contact': 'Contact',
 
   // Welcome
   'welcome.title': 'Welcome to TimeDoc!',
@@ -507,6 +530,27 @@ const en: Record<string, string> = {
   'customFields.nameError': 'Name must contain only letters.',
   'customFields.nameExists': 'A field with this name already exists.',
   'customFields.nameRequired': 'Name is required.',
+
+  // Contact
+  'contact.title': 'Contact Us',
+  'contact.subtitle': "We're open for feedback! Share your ideas, issues, or suggestions with us.",
+  'contact.name': 'Name',
+  'contact.namePlaceholder': 'Your name',
+  'contact.subject': 'Subject',
+  'contact.message': 'Message',
+  'contact.messagePlaceholder': 'Describe your request...',
+  'contact.send': 'Send Email',
+  'contact.sendVia': 'Send via',
+  'contact.hint': 'Choose your preferred email service.',
+  'contact.category.feedback': 'Feedback',
+  'contact.category.bug': 'Bug Report',
+  'contact.category.feature': 'Feature Request',
+  'contact.category.other': 'Other',
+  'contact.openForFeedback': 'Open for Feedback',
+  'contact.to': 'To',
+  'contact.statusOpened': 'Email has been prepared. Please send it.',
+  'contact.statusFallback': 'No email client found. The text has been copied to your clipboard. Send it manually to:',
+  'contact.directEmail': 'Or email us directly at',
 
   // What's New
   'whatsNew.title': "What's New",

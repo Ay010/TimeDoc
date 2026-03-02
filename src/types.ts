@@ -48,6 +48,9 @@ declare global {
         close: () => Promise<void>
         isMaximized: () => Promise<boolean>
       }
+      shell: {
+        openExternal: (url: string) => Promise<void>
+      }
       auth: {
         hasPassword: () => Promise<boolean>
         verifyUser: () => Promise<{ success: boolean; cancelled: boolean }>

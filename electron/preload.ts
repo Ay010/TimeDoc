@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('api', {
     close: () => ipcRenderer.invoke('window:close'),
     isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
   },
+  shell: {
+    openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url),
+  },
   auth: {
     hasPassword: () => ipcRenderer.invoke('auth:hasPassword'),
     verifyUser: () => ipcRenderer.invoke('auth:verifyUser'),

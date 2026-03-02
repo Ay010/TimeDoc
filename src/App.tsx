@@ -4,13 +4,14 @@ import MonthView from './components/MonthView'
 import TemplateManager from './components/TemplateManager'
 import BackupSettings from './components/BackupSettings'
 import SettingsPanel from './components/SettingsPanel'
+import ContactPage from './components/ContactPage'
 import WhatsNew from './components/WhatsNew'
 import { useEntryStore } from './stores/useEntryStore'
 import { useSettingsStore } from './stores/useSettingsStore'
 import { useI18n } from './i18n'
 import { changelog, getMinorVersion } from './changelog'
 
-type Tab = 'hours' | 'templates' | 'settings' | 'backup'
+type Tab = 'hours' | 'templates' | 'settings' | 'backup' | 'contact'
 
 const SEEN_VERSION_KEY = 'timedoc-seen-version'
 
@@ -78,6 +79,7 @@ function App() {
     { id: 'templates', label: t('tab.templates') },
     { id: 'settings', label: t('tab.settings') },
     { id: 'backup', label: t('tab.backup') },
+    { id: 'contact', label: t('tab.contact') },
   ]
 
   return (
@@ -165,6 +167,7 @@ function App() {
         {activeTab === 'templates' && <TemplateManager />}
         {activeTab === 'settings' && <SettingsPanel />}
         {activeTab === 'backup' && <BackupSettings />}
+        {activeTab === 'contact' && <ContactPage />}
       </main>
 
       {showWhatsNew && <WhatsNew onClose={handleCloseWhatsNew} />}

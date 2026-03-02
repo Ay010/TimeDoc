@@ -55,6 +55,13 @@ function createWindow() {
     },
   })
 
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('mailto:') || url.startsWith('https://') || url.startsWith('http://')) {
+      shell.openExternal(url)
+    }
+    return { action: 'deny' }
+  })
+
   if (VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(VITE_DEV_SERVER_URL)
   } else {
@@ -141,6 +148,7 @@ function registerIpcHandlers(dataPath: string) {
   })
   ipcMain.handle('window:close', () => mainWindow?.close())
   ipcMain.handle('window:isMaximized', () => mainWindow?.isMaximized())
+  ipcMain.handle('shell:openExternal', (_e, url: string) => shell.openExternal(url))
 
   // --- Auth ---
   function showPasswordDialog(title: string, subtitle: string): Promise<string> {

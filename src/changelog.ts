@@ -13,6 +13,26 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '1.6',
+    date: '2026-03-02',
+    highlights: [
+      {
+        title: { en: 'Contact Us', de: 'Kontaktiere uns' },
+        description: {
+          en: 'Send feedback, bug reports, or feature requests directly from the app via a new Contact tab.',
+          de: 'Sende Feedback, Bug Reports oder Feature-Wünsche direkt aus der App über den neuen Kontakt-Tab.',
+        },
+      },
+      {
+        title: { en: 'Mail Client Selection', de: 'E-Mail-Client Auswahl' },
+        description: {
+          en: 'Choose your preferred email service (Outlook.com, Gmail, Yahoo Mail) instead of relying on the OS default.',
+          de: 'Wähle deinen bevorzugten E-Mail-Dienst (Outlook.com, Gmail, Yahoo Mail) statt den OS-Standard zu verwenden.',
+        },
+      },
+    ],
+  },
+  {
     version: '1.5',
     date: '2026-03-02',
     highlights: [
