@@ -23,6 +23,8 @@
 - **Data Import** — Paste time entries from Excel or other sources and let the app parse and merge them
 - **Backup System** — Automatic daily backups, manual backup creation, and export/import to USB or any folder
 - **Sensitive Data Protection** — IBAN and BIC are encrypted (AES-256-GCM) and optionally password-protected
+- **Multi-Language** — Full English and German support with a language toggle in Settings
+- **What's New** — See the latest features after each major update, accessible anytime via the nav icon
 - **Portable Mode** — Run without installation, carry your data on a USB stick
 - **Auto-Update** — The app checks for updates on startup and installs them automatically
 

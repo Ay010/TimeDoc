@@ -1,34 +1,18 @@
 import { useState, useMemo } from 'react'
 import { useSettingsStore } from '../stores/useSettingsStore'
 import { useEntryStore } from '../stores/useEntryStore'
+import { useI18n } from '../i18n'
 
 const MONTH_NAMES_DE = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
   'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
 ]
 
-const DEFAULT_BODY = `Hallo {{AUFTRAGGEBER_NAME}},
-
-anbei erhalten Sie meine Rechnung sowie den zugehörigen Stundenzettel für den Monat {{MONAT}} {{JAHR}}.
-
-Rechnungsnummer: {{RECHNUNGSNUMMER}}
-Leistungszeitraum: {{LEISTUNGSZEITRAUM}}
-Gesamtstunden: {{GESAMT_STUNDEN}} h
-Rechnungsbetrag: {{BETRAG}}
-
-Bitte überweisen Sie den Rechnungsbetrag innerhalb der vereinbarten Zahlungsfrist auf das in der Rechnung angegebene Konto.
-
-Bei Rückfragen stehe ich Ihnen gerne zur Verfügung.
-
-Viele Grüße
-{{NAME}}`
-
-const DEFAULT_SUBJECT = `Rechnung & Stundenzettel {{MONAT}} {{JAHR}} – {{NAME}}`
-
 const BODY_KEY = 'email_vorlage'
 const SUBJECT_KEY = 'email_betreff'
 
 function EmailTemplate() {
+  const t = useI18n((s) => s.t)
   const { settings } = useSettingsStore()
   const { currentYear, currentMonth, totalHours } = useEntryStore()
   const [editing, setEditing] = useState(false)
@@ -37,8 +21,8 @@ function EmailTemplate() {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [savedMsg, setSavedMsg] = useState(false)
 
-  const bodyTemplate = settings[BODY_KEY] || DEFAULT_BODY
-  const subjectTemplate = settings[SUBJECT_KEY] || DEFAULT_SUBJECT
+  const bodyTemplate = settings[BODY_KEY] || t('email.defaultBody')
+  const subjectTemplate = settings[SUBJECT_KEY] || t('email.defaultSubject')
 
   const emailMonth = useMemo(() => {
     const today = new Date()
@@ -124,18 +108,18 @@ function EmailTemplate() {
   }
 
   const availableVars = [
-    { var: '{{NAME}}', desc: 'Dein Name' },
-    { var: '{{EMAIL}}', desc: 'Deine E-Mail' },
-    { var: '{{MONAT}}', desc: 'Monatsname (z.B. Februar)' },
-    { var: '{{JAHR}}', desc: 'Jahr (z.B. 2026)' },
-    { var: '{{MONAT_NUMMER}}', desc: 'Monat als Zahl (z.B. 02)' },
-    { var: '{{RECHNUNGSNUMMER}}', desc: 'Rechnungsnummer' },
-    { var: '{{LEISTUNGSZEITRAUM}}', desc: 'Leistungszeitraum' },
-    { var: '{{GESAMT_STUNDEN}}', desc: 'Stunden (z.B. 77:00)' },
-    { var: '{{GESAMT_STUNDEN_DEZIMAL}}', desc: 'Stunden dezimal (z.B. 77.00)' },
-    { var: '{{STUNDENSATZ}}', desc: 'Stundensatz mit €' },
-    { var: '{{BETRAG}}', desc: 'Gesamtbetrag mit €' },
-    { var: '{{AUFTRAGGEBER_NAME}}', desc: 'Auftraggeber Firma/Name' },
+    { var: '{{NAME}}', desc: t('email.var.name') },
+    { var: '{{EMAIL}}', desc: t('email.var.email') },
+    { var: '{{MONAT}}', desc: t('email.var.month') },
+    { var: '{{JAHR}}', desc: t('email.var.year') },
+    { var: '{{MONAT_NUMMER}}', desc: t('email.var.monthNum') },
+    { var: '{{RECHNUNGSNUMMER}}', desc: t('email.var.invoiceNr') },
+    { var: '{{LEISTUNGSZEITRAUM}}', desc: t('email.var.period') },
+    { var: '{{GESAMT_STUNDEN}}', desc: t('email.var.hours') },
+    { var: '{{GESAMT_STUNDEN_DEZIMAL}}', desc: t('email.var.hoursDecimal') },
+    { var: '{{STUNDENSATZ}}', desc: t('email.var.rate') },
+    { var: '{{BETRAG}}', desc: t('email.var.total') },
+    { var: '{{AUFTRAGGEBER_NAME}}', desc: t('email.var.client') },
   ]
 
   function insertVar(varName: string, targetId: string, setter: (fn: (prev: string) => string) => void) {
@@ -156,13 +140,13 @@ function EmailTemplate() {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">E-Mail-Vorlage</h3>
+        <h3 className="text-lg font-semibold">{t('email.title')}</h3>
         <div className="flex items-center gap-2">
-          {savedMsg && <span className="text-sm text-emerald-600 font-medium">Gespeichert!</span>}
+          {savedMsg && <span className="text-sm text-emerald-600 font-medium">{t('email.saved')}</span>}
           {!editing && (
             <>
               <button onClick={handleEdit} className="btn-secondary text-sm">
-                Vorlage bearbeiten
+                {t('email.editTemplate')}
               </button>
             </>
           )}
@@ -170,14 +154,13 @@ function EmailTemplate() {
       </div>
 
       <p className="text-sm text-gray-500 mb-4">
-        Bezieht sich auf: <span className="font-semibold text-gray-700">{MONTH_NAMES_DE[emailMonth.month - 1]} {emailMonth.year}</span>
-        <span className="text-gray-400 ml-1">(Vormonat, wechselt ab dem 25.)</span>
+        {t('email.refMonth', { month: t(`month.${emailMonth.month - 1}`), year: String(emailMonth.year) })}
       </p>
 
       {editing ? (
         <div className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-xs font-semibold text-blue-700 mb-2">Verfügbare Variablen (Klick zum Einfügen in fokussiertes Feld):</p>
+            <p className="text-xs font-semibold text-blue-700 mb-2">{t('email.vars')}</p>
             <div className="flex flex-wrap gap-1">
               {availableVars.map((v) => (
                 <button
@@ -200,7 +183,7 @@ function EmailTemplate() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Betreff</label>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">{t('email.subject')}</label>
             <input
               id="email-subject-input"
               type="text"
@@ -211,7 +194,7 @@ function EmailTemplate() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">Nachricht</label>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">{t('email.body')}</label>
             <textarea
               id="email-body-textarea"
               value={editBody}
@@ -223,50 +206,50 @@ function EmailTemplate() {
 
           <div className="flex justify-end gap-2">
             <button
-              onClick={() => { setEditBody(DEFAULT_BODY); setEditSubject(DEFAULT_SUBJECT); }}
+              onClick={() => { setEditBody(t('email.defaultBody')); setEditSubject(t('email.defaultSubject')); }}
               className="btn-secondary text-sm"
             >
-              Standardvorlage
+              {t('email.defaultTemplate')}
             </button>
             <button onClick={() => setEditing(false)} className="btn-secondary text-sm">
-              Abbrechen
+              {t('email.cancel')}
             </button>
             <button onClick={handleSave} className="btn-primary text-sm">
-              Vorlage speichern
+              {t('email.saveTemplate')}
             </button>
           </div>
         </div>
       ) : (
         <div className="space-y-3">
           <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg group">
-            <span className="text-xs font-semibold text-gray-500 uppercase w-12 shrink-0">An</span>
+            <span className="text-xs font-semibold text-gray-500 uppercase w-12 shrink-0">{t('email.to')}</span>
             <span className="flex-1 text-sm text-gray-800 font-mono truncate">
-              {recipientEmail || <span className="text-gray-400 italic">Nicht gesetzt (Einstellungen &rarr; Auftraggeber &rarr; E-Mail)</span>}
+              {recipientEmail || <span className="text-gray-400 italic">{t('email.notSet')}</span>}
             </span>
             {recipientEmail && (
               <button
                 onClick={() => copyToClipboard(recipientEmail, 'an')}
                 className="text-xs px-3 py-1 rounded bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
               >
-                {copiedField === 'an' ? 'Kopiert!' : 'Kopieren'}
+                {copiedField === 'an' ? t('email.copied') : t('email.copy')}
               </button>
             )}
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg group">
-            <span className="text-xs font-semibold text-gray-500 uppercase w-12 shrink-0">Betreff</span>
+            <span className="text-xs font-semibold text-gray-500 uppercase w-12 shrink-0">{t('email.subject')}</span>
             <span className="flex-1 text-sm text-gray-800 font-mono truncate">{filledSubject}</span>
             <button
               onClick={() => copyToClipboard(filledSubject, 'betreff')}
               className="text-xs px-3 py-1 rounded bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
             >
-              {copiedField === 'betreff' ? 'Kopiert!' : 'Kopieren'}
+              {copiedField === 'betreff' ? t('email.copied') : t('email.copy')}
             </button>
           </div>
 
           <div className="relative">
             <div className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <span className="text-xs font-semibold text-gray-500 uppercase w-12 shrink-0 mt-0.5">Text</span>
+              <span className="text-xs font-semibold text-gray-500 uppercase w-12 shrink-0 mt-0.5">{t('email.text')}</span>
               <div className="flex-1 text-sm text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
                 {filledBody}
               </div>
@@ -274,7 +257,7 @@ function EmailTemplate() {
                 onClick={() => copyToClipboard(filledBody, 'text')}
                 className="text-xs px-3 py-1 rounded bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
               >
-                {copiedField === 'text' ? 'Kopiert!' : 'Kopieren'}
+                {copiedField === 'text' ? t('email.copied') : t('email.copy')}
               </button>
             </div>
           </div>
@@ -282,12 +265,12 @@ function EmailTemplate() {
           <div className="flex justify-end">
             <button
               onClick={() => {
-                const full = (recipientEmail ? `An: ${recipientEmail}\n` : '') + `Betreff: ${filledSubject}\n\n${filledBody}`
+                const full = (recipientEmail ? `${t('email.to')}: ${recipientEmail}\n` : '') + `${t('email.subject')}: ${filledSubject}\n\n${filledBody}`
                 copyToClipboard(full, 'alles')
               }}
               className="btn-primary text-sm"
             >
-              {copiedField === 'alles' ? 'Kopiert!' : 'Alles kopieren'}
+              {copiedField === 'alles' ? t('email.copied') : t('email.copyAll')}
             </button>
           </div>
         </div>

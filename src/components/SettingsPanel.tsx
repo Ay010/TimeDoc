@@ -1,45 +1,49 @@
 import { useState, useEffect } from 'react'
 import { useSettingsStore } from '../stores/useSettingsStore'
+import { useI18n, type Lang } from '../i18n'
 
-const SETTING_GROUPS = [
-  {
-    title: 'Persönliche Daten',
-    fields: [
-      { key: 'name', label: 'Name', placeholder: 'Max Mustermann', sensitive: false },
-      { key: 'adresse_zeile1', label: 'Adresse Zeile 1', placeholder: 'Musterstraße 1', sensitive: false },
-      { key: 'adresse_zeile2', label: 'Adresse Zeile 2', placeholder: '12345 Musterstadt', sensitive: false },
-      { key: 'email', label: 'E-Mail', placeholder: 'email@beispiel.de', sensitive: false },
-    ],
-  },
-  {
-    title: 'Bankdaten',
-    fields: [
-      { key: 'iban', label: 'IBAN', placeholder: 'DE00 0000 0000 0000 0000 00', sensitive: true },
-      { key: 'bic', label: 'BIC', placeholder: 'DEUTDEDBXXX', sensitive: true },
-      { key: 'bank', label: 'Bank', placeholder: 'Deutsche Bank', sensitive: false },
-    ],
-  },
-  {
-    title: 'Auftraggeber',
-    fields: [
-      { key: 'auftraggeber_name', label: 'Firma / Name', placeholder: 'Firma GmbH', sensitive: false },
-      { key: 'auftraggeber_adresse', label: 'Adresse', placeholder: 'Firmenstraße 1, 12345 Stadt', sensitive: false },
-      { key: 'auftraggeber_email', label: 'E-Mail', placeholder: 'rechnung@firma.de', sensitive: false },
-    ],
-  },
-  {
-    title: 'Rechnung',
-    fields: [
-      { key: 'stundensatz', label: 'Stundensatz (€)', placeholder: '25', sensitive: false },
-      { key: 'rechnungsnummer_prefix', label: 'Rechnungsnummer-Präfix', placeholder: 'MM (Initialen)', sensitive: false },
-      { key: 'rechnungsnummer_counter', label: 'Rechnungsnummer-Zähler', placeholder: '1', sensitive: false },
-    ],
-  },
-]
+type SettingField = { key: string; label: string; placeholder: string; sensitive: boolean }
+type SettingGroup = { title: string; fields: SettingField[] }
 
-const ALL_FIELDS = SETTING_GROUPS.flatMap(g => g.fields)
+function getSettingGroups(t: (key: string) => string): SettingGroup[] {
+  return [
+    {
+      title: t('settings.group.personal'),
+      fields: [
+        { key: 'name', label: t('settings.field.name'), placeholder: 'Max Mustermann', sensitive: false },
+        { key: 'adresse_zeile1', label: t('settings.field.address1'), placeholder: 'Musterstraße 1', sensitive: false },
+        { key: 'adresse_zeile2', label: t('settings.field.address2'), placeholder: '12345 Musterstadt', sensitive: false },
+        { key: 'email', label: t('settings.field.email'), placeholder: 'email@beispiel.de', sensitive: false },
+      ],
+    },
+    {
+      title: t('settings.group.bank'),
+      fields: [
+        { key: 'iban', label: t('settings.field.iban'), placeholder: 'DE00 0000 0000 0000 0000 00', sensitive: true },
+        { key: 'bic', label: t('settings.field.bic'), placeholder: 'DEUTDEDBXXX', sensitive: true },
+        { key: 'bank', label: t('settings.field.bank'), placeholder: 'Deutsche Bank', sensitive: false },
+      ],
+    },
+    {
+      title: t('settings.group.client'),
+      fields: [
+        { key: 'auftraggeber_name', label: t('settings.field.clientName'), placeholder: 'Firma GmbH', sensitive: false },
+        { key: 'auftraggeber_adresse', label: t('settings.field.clientAddress'), placeholder: 'Firmenstraße 1, 12345 Stadt', sensitive: false },
+        { key: 'auftraggeber_email', label: t('settings.field.clientEmail'), placeholder: 'rechnung@firma.de', sensitive: false },
+      ],
+    },
+    {
+      title: t('settings.group.invoice'),
+      fields: [
+        { key: 'stundensatz', label: t('settings.field.hourlyRate'), placeholder: '25', sensitive: false },
+        { key: 'rechnungsnummer_prefix', label: t('settings.field.invoicePrefix'), placeholder: 'MM (Initialen)', sensitive: false },
+        { key: 'rechnungsnummer_counter', label: t('settings.field.invoiceCounter'), placeholder: '1', sensitive: false },
+      ],
+    },
+  ]
+}
 
-function parseSettingsImport(text: string): Record<string, string> {
+function parseSettingsImport(text: string, allFields: SettingField[]): Record<string, string> {
   const result: Record<string, string> = {}
   const lines = text.split('\n').filter(l => l.trim())
 
@@ -49,7 +53,7 @@ function parseSettingsImport(text: string): Record<string, string> {
     if (separatorMatch) {
       const rawKey = separatorMatch[1].trim()
       const value = separatorMatch[2].trim()
-      const field = ALL_FIELDS.find(f =>
+      const field = allFields.find(f =>
         f.key.toLowerCase() === rawKey.toLowerCase() ||
         f.label.toLowerCase() === rawKey.toLowerCase()
       )
@@ -58,7 +62,7 @@ function parseSettingsImport(text: string): Record<string, string> {
         continue
       }
       // Fuzzy match
-      const fuzzy = ALL_FIELDS.find(f =>
+      const fuzzy = allFields.find(f =>
         f.label.toLowerCase().includes(rawKey.toLowerCase()) ||
         rawKey.toLowerCase().includes(f.label.toLowerCase())
       )
@@ -73,7 +77,7 @@ function parseSettingsImport(text: string): Record<string, string> {
     if (tabs.length >= 2) {
       const rawKey = tabs[0]
       const value = tabs[1]
-      const field = ALL_FIELDS.find(f =>
+      const field = allFields.find(f =>
         f.key.toLowerCase() === rawKey.toLowerCase() ||
         f.label.toLowerCase() === rawKey.toLowerCase() ||
         f.label.toLowerCase().includes(rawKey.toLowerCase()) ||
@@ -89,7 +93,12 @@ function parseSettingsImport(text: string): Record<string, string> {
 }
 
 function SettingsPanel() {
+  const t = useI18n((s) => s.t)
+  const lang = useI18n((s) => s.lang)
+  const setLang = useI18n((s) => s.setLang)
   const { settings, loadSettings, setSetting } = useSettingsStore()
+  const SETTING_GROUPS = getSettingGroups(t)
+  const ALL_FIELDS = SETTING_GROUPS.flatMap(g => g.fields)
   const [localSettings, setLocalSettings] = useState<Record<string, string>>({})
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -131,7 +140,7 @@ function SettingsPanel() {
   }
 
   function handleImportParse() {
-    const parsed = parseSettingsImport(importText)
+    const parsed = parseSettingsImport(importText, ALL_FIELDS)
     setImportPreview(parsed)
   }
 
@@ -164,19 +173,19 @@ function SettingsPanel() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Einstellungen</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h2>
         <div className="flex items-center gap-3">
           {saved && (
-            <span className="text-sm text-emerald-600 font-medium">Gespeichert!</span>
+            <span className="text-sm text-emerald-600 font-medium">{t('settings.saved')}</span>
           )}
           <button onClick={handleExportSettings} className="btn-secondary text-sm">
-            Kopieren
+            {t('settings.copy')}
           </button>
           <button onClick={() => setShowImport(true)} className="btn-secondary text-sm">
-            Importieren
+            {t('settings.import')}
           </button>
           <button onClick={handleSave} disabled={saving} className="btn-primary">
-            {saving ? 'Speichere...' : 'Speichern'}
+            {saving ? t('settings.saving') : t('settings.save')}
           </button>
         </div>
       </div>
@@ -220,12 +229,12 @@ function SettingsPanel() {
                           setVisibleFields(prev => ({ ...prev, [field.key]: true }))
                           setTimeout(() => setAuthVerified(false), 5 * 60 * 1000)
                         } else if (!result.cancelled) {
-                          setAuthError('Falsches Passwort')
+                          setAuthError(t('settings.wrongPassword'))
                           setTimeout(() => setAuthError(''), 3000)
                         }
                       }}
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
-                      title={visibleFields[field.key] ? 'Verbergen' : 'Anzeigen'}
+                      title={visibleFields[field.key] ? t('settings.hide') : t('settings.show')}
                     >
                       {visibleFields[field.key] ? (
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -244,7 +253,7 @@ function SettingsPanel() {
               </div>
             ))}
           </div>
-          {group.title === 'Bankdaten' && (
+          {group.title === t('settings.group.bank') && (
             <>
             {authError && (
               <div className="mt-3 text-sm text-red-600 font-medium">{authError}</div>
@@ -252,11 +261,11 @@ function SettingsPanel() {
             <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Passwortschutz</p>
+                  <p className="text-sm font-medium text-gray-700">{t('settings.password.title')}</p>
                   <p className="text-xs text-gray-400">
                     {hasPassword
-                      ? 'App-Passwort aktiv — IBAN/BIC sind geschützt'
-                      : 'Kein Passwort gesetzt — IBAN/BIC frei sichtbar'}
+                      ? t('settings.password.active')
+                      : t('settings.password.inactive')}
                   </p>
                 </div>
                 <button
@@ -271,7 +280,7 @@ function SettingsPanel() {
                         setHasPassword(false)
                         setAuthVerified(false)
                       } else if (result.wrongPassword) {
-                        setAuthError('Falsches Passwort')
+                        setAuthError(t('settings.wrongPassword'))
                         setTimeout(() => setAuthError(''), 3000)
                       }
                     } else {
@@ -307,19 +316,19 @@ function SettingsPanel() {
                         setAuthVerified(false)
                         setVisibleFields({})
                       } else if (result.wrongPassword) {
-                        setAuthError('Falsches Passwort')
+                        setAuthError(t('settings.wrongPassword'))
                         setTimeout(() => setAuthError(''), 3000)
                       }
                     }}
                     className="text-xs text-blue-600 hover:text-blue-800"
                   >
-                    Passwort ändern
+                    {t('settings.password.change')}
                   </button>
                   <span className="text-gray-300">|</span>
                   <button
                     disabled={authLoading}
                     onClick={async () => {
-                      if (!confirm('Bankdaten (IBAN, BIC) und das App-Passwort werden gelöscht. Fortfahren?')) return
+                      if (!confirm(t('settings.password.confirmReset'))) return
                       setAuthLoading(true)
                       await setSetting('iban', '')
                       await setSetting('bic', '')
@@ -332,7 +341,7 @@ function SettingsPanel() {
                     }}
                     className="text-xs text-red-500 hover:text-red-700"
                   >
-                    Passwort vergessen? Bankdaten zurücksetzen
+                    {t('settings.password.forgot')}
                   </button>
                 </div>
               )}
@@ -349,7 +358,7 @@ function SettingsPanel() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900">Einstellungen importieren</h3>
+              <h3 className="text-lg font-bold text-gray-900">{t('settings.import.title')}</h3>
               <button onClick={() => { setShowImport(false); setImportPreview(null); setImportText('') }} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
 
@@ -357,7 +366,7 @@ function SettingsPanel() {
               {!importPreview ? (
                 <>
                   <p className="text-sm text-gray-600">
-                    Füge deine Einstellungen ein. Format: eine Zeile pro Feld, z.B.:
+                    {t('settings.import.description')}
                   </p>
                   <pre className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3">
 {`Name: Max Mustermann
@@ -372,7 +381,7 @@ Stundensatz (€): 25`}
                   <textarea
                     value={importText}
                     onChange={(e) => setImportText(e.target.value)}
-                    placeholder="Daten hier einfügen..."
+                    placeholder={t('settings.import.placeholder')}
                     className="input-field w-full h-40 font-mono text-xs resize-none"
                   />
                   <div className="flex justify-end">
@@ -381,7 +390,7 @@ Stundensatz (€): 25`}
                       disabled={!importText.trim()}
                       className="btn-primary"
                     >
-                      Daten erkennen
+                      {t('settings.import.detect')}
                     </button>
                   </div>
                 </>
@@ -389,13 +398,13 @@ Stundensatz (€): 25`}
                 <>
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-medium text-emerald-600">
-                      {importCount} Felder erkannt
+                      {t('settings.import.detected', { n: String(importCount) })}
                     </span>
                     <button
                       onClick={() => setImportPreview(null)}
                       className="text-sm text-blue-600 hover:text-blue-800 ml-auto"
                     >
-                      Zurück
+                      {t('settings.import.back')}
                     </button>
                   </div>
 
@@ -413,13 +422,13 @@ Stundensatz (€): 25`}
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <button onClick={() => { setShowImport(false); setImportPreview(null); setImportText('') }} className="btn-secondary">Abbrechen</button>
+                    <button onClick={() => { setShowImport(false); setImportPreview(null); setImportText('') }} className="btn-secondary">{t('settings.import.cancel')}</button>
                     <button
                       onClick={handleImportApply}
                       disabled={importCount === 0 || saving}
                       className="btn-success"
                     >
-                      {saving ? 'Speichere...' : `${importCount} Felder übernehmen`}
+                      {saving ? t('settings.saving') : t('settings.import.apply', { n: String(importCount) })}
                     </button>
                   </div>
                 </>
@@ -428,6 +437,33 @@ Stundensatz (€): 25`}
           </div>
         </div>
       )}
+
+      <div className="card">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-700">{t('lang.label')}</p>
+          </div>
+          <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+            {(['en', 'de'] as Lang[]).map((l) => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  lang === l
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {l === 'en' ? 'English' : 'Deutsch'}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="text-center text-xs text-gray-400 mt-8 pb-4">
+        TimeDoc v{__APP_VERSION__}
+      </div>
     </div>
   )
 }

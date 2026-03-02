@@ -1,18 +1,13 @@
 import { useState } from 'react'
 import { useEntryStore } from '../stores/useEntryStore'
+import { useI18n } from '../i18n'
 import DayEntry from './DayEntry'
 import ExportButton from './ExportButton'
 import ImportDialog from './ImportDialog'
 import type { TimeEntry } from '../types'
 
-const MONTH_NAMES = [
-  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
-]
-
-const WEEKDAY_NAMES = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
-
 function MonthView() {
+  const t = useI18n((s) => s.t)
   const {
     entries, currentYear, currentMonth,
     nextMonth, prevMonth, totalHours, loading,
@@ -35,7 +30,7 @@ function MonthView() {
 
   function getWeekday(day: number): string {
     const date = new Date(currentYear, currentMonth - 1, day)
-    return WEEKDAY_NAMES[date.getDay()]
+    return t(`weekday.${date.getDay()}`)
   }
 
   function isWeekend(day: number): boolean {
@@ -64,25 +59,21 @@ function MonthView() {
     <div className="max-w-6xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={prevMonth} className="btn-secondary px-3 py-1.5">
-            ←
-          </button>
+          <button onClick={prevMonth} className="btn-secondary px-3 py-1.5">←</button>
           <h2 className="text-2xl font-bold text-gray-900 min-w-[220px] text-center">
-            {MONTH_NAMES[currentMonth - 1]} {currentYear}
+            {t(`month.${currentMonth - 1}`)} {currentYear}
           </h2>
-          <button onClick={nextMonth} className="btn-secondary px-3 py-1.5">
-            →
-          </button>
+          <button onClick={nextMonth} className="btn-secondary px-3 py-1.5">→</button>
         </div>
         <div className="flex items-center gap-4">
           <div className="card py-3 px-5 flex items-center gap-3">
-            <span className="text-sm text-gray-500">Monatsstunden:</span>
+            <span className="text-sm text-gray-500">{t('month.totalHours')}</span>
             <span className="text-2xl font-bold text-blue-600">
               {totalH}:{String(totalM).padStart(2, '0')}
             </span>
           </div>
           <button onClick={() => setShowImport(true)} className="btn-secondary">
-            Importieren
+            {t('month.import')}
           </button>
           <ExportButton />
         </div>
@@ -90,20 +81,20 @@ function MonthView() {
 
       {loading ? (
         <div className="card flex items-center justify-center py-20">
-          <div className="text-gray-400 text-lg">Lade...</div>
+          <div className="text-gray-400 text-lg">{t('month.loading')}</div>
         </div>
       ) : (
         <div className="card overflow-hidden p-0">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">Tag</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">Datum</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">Beginn</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">Ende</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">Pause</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">Stunden</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Bemerkung</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">{t('month.day')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">{t('month.date')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">{t('month.start')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">{t('month.end')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">{t('month.break')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">{t('month.hours')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('month.notes')}</th>
                 <th className="px-4 py-3 w-20"></th>
               </tr>
             </thead>
@@ -149,7 +140,7 @@ function MonthView() {
                         }}
                         className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                       >
-                        {entry ? 'Bearbeiten' : 'Eintragen'}
+                        {entry ? t('month.edit') : t('month.addEntry')}
                       </button>
                     </td>
                   </tr>

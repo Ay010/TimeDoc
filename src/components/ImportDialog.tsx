@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
 import { useEntryStore } from '../stores/useEntryStore'
 
 interface ParsedRow {
@@ -299,6 +300,7 @@ interface Props {
 }
 
 function ImportDialog({ onClose }: Props) {
+  const t = useI18n((s) => s.t)
   const [pasteText, setPasteText] = useState('')
   const [parsed, setParsed] = useState<ParsedRow[] | null>(null)
   const [importing, setImporting] = useState(false)
@@ -348,7 +350,7 @@ function ImportDialog({ onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900">Daten importieren</h3>
+          <h3 className="text-lg font-bold text-gray-900">{t('import.title')}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>
 
@@ -358,17 +360,25 @@ function ImportDialog({ onClose }: Props) {
               {!parsed ? (
                 <>
                   <p className="text-sm text-gray-600">
-                    Kopiere deine Stunden-Daten aus Excel oder einer Tabelle und füge sie hier ein.
-                    Die App erkennt automatisch Datum, Beginn, Ende, Pause und Arbeitsstunden.
+                    {t('import.description')}
                   </p>
                   <p className="text-xs text-gray-400">
-                    Erwartetes Format (Tab-getrennt): Datum &bull; Beginn &bull; Ende &bull; Pause &bull; Arbeitsstunden &bull; Bemerkung
+                    {t('import.format')}
                   </p>
                   <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                     <p className="text-xs text-amber-700">
-                      <span className="font-semibold">Tipp:</span> Daten in einem anderen Format? Gib sie einfach einer KI (z.B. ChatGPT) und bitte sie, die Daten ins Format
-                      <span className="font-mono bg-amber-100 px-1 rounded mx-1">DD.MM.YY TAB HH:MM TAB HH:MM TAB HH:MM TAB H:MM</span>
-                      umzuwandeln. Dann hier einfügen.
+                      {(() => {
+                        const tip = t('import.tip')
+                        const format = 'DD.MM.YY TAB HH:MM TAB HH:MM TAB HH:MM TAB H:MM'
+                        const parts = tip.split(format)
+                        return (
+                          <>
+                            {parts[0]}
+                            <span className="font-mono bg-amber-100 px-1 rounded mx-1">{format}</span>
+                            {parts[1]}
+                          </>
+                        )
+                      })()}
                     </p>
                   </div>
                   <textarea
@@ -383,7 +393,7 @@ function ImportDialog({ onClose }: Props) {
                       disabled={!pasteText.trim()}
                       className="btn-primary"
                     >
-                      Daten erkennen
+                      {t('import.detect')}
                     </button>
                   </div>
                 </>
@@ -391,18 +401,18 @@ function ImportDialog({ onClose }: Props) {
                 <>
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-medium text-emerald-600">
-                      {validCount} Einträge erkannt
+                      {t('import.detected', { n: validCount })}
                     </span>
                     {invalidCount > 0 && (
                       <span className="text-sm font-medium text-red-500">
-                        {invalidCount} ungültig
+                        {t('import.invalid', { n: invalidCount })}
                       </span>
                     )}
                     <button
                       onClick={() => setParsed(null)}
                       className="text-sm text-blue-600 hover:text-blue-800 ml-auto"
                     >
-                      Zurück
+                      {t('import.back')}
                     </button>
                   </div>
 
@@ -411,12 +421,12 @@ function ImportDialog({ onClose }: Props) {
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-200">
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500 w-8"></th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Datum</th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Beginn</th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Ende</th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Pause</th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Stunden</th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Bemerkung</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">{t('import.headerDate')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">{t('import.headerStart')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">{t('import.headerEnd')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">{t('import.headerBreak')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">{t('import.headerHours')}</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">{t('import.headerNotes')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -446,13 +456,13 @@ function ImportDialog({ onClose }: Props) {
                   </div>
 
                   <div className="flex justify-end gap-3">
-                    <button onClick={onClose} className="btn-secondary">Abbrechen</button>
+                    <button onClick={onClose} className="btn-secondary">{t('import.cancel')}</button>
                     <button
                       onClick={handleImport}
                       disabled={validCount === 0 || importing}
                       className="btn-success"
                     >
-                      {importing ? 'Importiere...' : `${validCount} Einträge importieren`}
+                      {importing ? t('import.importing') : t('import.importN', { n: validCount })}
                     </button>
                   </div>
                 </>
@@ -461,8 +471,8 @@ function ImportDialog({ onClose }: Props) {
           ) : (
             <div className="text-center py-12">
               <div className="text-4xl mb-4 text-emerald-500">&#10003;</div>
-              <p className="text-lg font-semibold text-gray-900">{validCount} Einträge erfolgreich importiert!</p>
-              <button onClick={onClose} className="btn-primary mt-6">Fertig</button>
+              <p className="text-lg font-semibold text-gray-900">{t('import.success', { n: validCount })}</p>
+              <button onClick={onClose} className="btn-primary mt-6">{t('import.done')}</button>
             </div>
           )}
         </div>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useI18n } from '../i18n'
 
 function TitleBar() {
+  const t = useI18n((s) => s.t)
   const [maximized, setMaximized] = useState(false)
 
   useEffect(() => {
@@ -39,7 +41,7 @@ function TitleBar() {
         <button
           onClick={handleMinimize}
           className="w-11 h-full flex items-center justify-center hover:bg-gray-100 transition-colors no-drag"
-          title="Minimieren"
+          title={t('titlebar.minimize')}
         >
           <svg width="10" height="1" viewBox="0 0 10 1" className="text-gray-600">
             <rect width="10" height="1" fill="currentColor" />
@@ -48,7 +50,7 @@ function TitleBar() {
         <button
           onClick={handleMaximize}
           className="w-11 h-full flex items-center justify-center hover:bg-gray-100 transition-colors no-drag"
-          title={maximized ? 'Wiederherstellen' : 'Maximieren'}
+          title={maximized ? t('titlebar.restore') : t('titlebar.maximize')}
         >
           {maximized ? (
             <svg width="10" height="10" viewBox="0 0 10 10" className="text-gray-600">
@@ -63,7 +65,7 @@ function TitleBar() {
         <button
           onClick={handleClose}
           className="w-11 h-full flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors no-drag group"
-          title="Schließen"
+          title={t('titlebar.close')}
         >
           <svg width="10" height="10" viewBox="0 0 10 10" className="text-gray-600 group-hover:text-white">
             <path d="M1 0L5 4L9 0L10 1L6 5L10 9L9 10L5 6L1 10L0 9L4 5L0 1Z" fill="currentColor" />

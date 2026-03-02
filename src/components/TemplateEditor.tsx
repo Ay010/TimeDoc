@@ -1,71 +1,58 @@
 import { useState, useEffect } from 'react'
+import { useI18n } from '../i18n'
 
 interface Props {
   templateName: string
   onClose: () => void
 }
 
-const VARIABLE_GROUPS = [
-  {
-    title: 'Persönlich',
-    vars: [
-      { key: 'NAME', label: 'Name' },
-      { key: 'ADRESSE_ZEILE1', label: 'Adresse Zeile 1' },
-      { key: 'ADRESSE_ZEILE2', label: 'Adresse Zeile 2' },
-      { key: 'EMAIL', label: 'E-Mail' },
-    ],
-  },
-  {
-    title: 'Bankdaten',
-    vars: [
-      { key: 'IBAN', label: 'IBAN' },
-      { key: 'BIC', label: 'BIC' },
-      { key: 'BANK', label: 'Bank' },
-    ],
-  },
-  {
-    title: 'Auftraggeber',
-    vars: [
-      { key: 'AUFTRAGGEBER_NAME', label: 'Auftraggeber Name' },
-      { key: 'AUFTRAGGEBER_ADRESSE', label: 'Auftraggeber Adresse' },
-    ],
-  },
-  {
-    title: 'Rechnung',
-    vars: [
-      { key: 'STUNDENSATZ', label: 'Stundensatz' },
-      { key: 'BETRAG', label: 'Gesamtbetrag' },
-      { key: 'ZWISCHENSUMME', label: 'Zwischensumme' },
-      { key: 'RECHNUNGSNUMMER', label: 'Rechnungsnummer' },
-      { key: 'RECHNUNGSDATUM', label: 'Rechnungsdatum' },
-    ],
-  },
-  {
-    title: 'Zeitraum',
-    vars: [
-      { key: 'MONAT', label: 'Monat (Januar)' },
-      { key: 'MONAT_KURZ', label: 'Monat kurz (Jan-26)' },
-      { key: 'JAHR', label: 'Jahr' },
-      { key: 'MONAT_NUMMER', label: 'Monatsnummer (01-12)' },
-      { key: 'GESAMT_STUNDEN', label: 'Gesamtstunden (h:mm)' },
-      { key: 'GESAMT_STUNDEN_DEZIMAL', label: 'Gesamtstunden (dezimal)' },
-      { key: 'LEISTUNGSZEITRAUM', label: 'Leistungszeitraum' },
-    ],
-  },
+const VARIABLE_GROUPS_STRUCT = [
+  { titleKey: 'editor.group.personal', vars: [
+    { key: 'NAME', labelKey: 'editor.var.name' },
+    { key: 'ADRESSE_ZEILE1', labelKey: 'editor.var.address1' },
+    { key: 'ADRESSE_ZEILE2', labelKey: 'editor.var.address2' },
+    { key: 'EMAIL', labelKey: 'editor.var.email' },
+  ]},
+  { titleKey: 'editor.group.bank', vars: [
+    { key: 'IBAN', labelKey: 'editor.var.iban' },
+    { key: 'BIC', labelKey: 'editor.var.bic' },
+    { key: 'BANK', labelKey: 'editor.var.bank' },
+  ]},
+  { titleKey: 'editor.group.client', vars: [
+    { key: 'AUFTRAGGEBER_NAME', labelKey: 'editor.var.clientName' },
+    { key: 'AUFTRAGGEBER_ADRESSE', labelKey: 'editor.var.clientAddress' },
+  ]},
+  { titleKey: 'editor.group.invoice', vars: [
+    { key: 'STUNDENSATZ', labelKey: 'editor.var.hourlyRate' },
+    { key: 'BETRAG', labelKey: 'editor.var.total' },
+    { key: 'ZWISCHENSUMME', labelKey: 'editor.var.subtotal' },
+    { key: 'RECHNUNGSNUMMER', labelKey: 'editor.var.invoiceNr' },
+    { key: 'RECHNUNGSDATUM', labelKey: 'editor.var.invoiceDate' },
+  ]},
+  { titleKey: 'editor.group.period', vars: [
+    { key: 'MONAT', labelKey: 'editor.var.monthLong' },
+    { key: 'MONAT_KURZ', labelKey: 'editor.var.monthShort' },
+    { key: 'JAHR', labelKey: 'editor.var.year' },
+    { key: 'MONAT_NUMMER', labelKey: 'editor.var.monthNum' },
+    { key: 'GESAMT_STUNDEN', labelKey: 'editor.var.totalHours' },
+    { key: 'GESAMT_STUNDEN_DEZIMAL', labelKey: 'editor.var.totalDecimal' },
+    { key: 'LEISTUNGSZEITRAUM', labelKey: 'editor.var.period' },
+  ]},
 ]
 
-const DAY_VARS = [
-  { base: 'DATUM_', label: 'Datum' },
-  { base: 'BEGINN_', label: 'Beginn' },
-  { base: 'ENDE_', label: 'Ende' },
-  { base: 'PAUSE_', label: 'Pause' },
-  { base: 'STUNDEN_', label: 'Stunden' },
-  { base: 'BEMERKUNG_', label: 'Bemerkung' },
+const DAY_VARS_STRUCT = [
+  { base: 'DATUM_', labelKey: 'editor.dayVar.date' },
+  { base: 'BEGINN_', labelKey: 'editor.dayVar.start' },
+  { base: 'ENDE_', labelKey: 'editor.dayVar.end' },
+  { base: 'PAUSE_', labelKey: 'editor.dayVar.break' },
+  { base: 'STUNDEN_', labelKey: 'editor.dayVar.hours' },
+  { base: 'BEMERKUNG_', labelKey: 'editor.dayVar.notes' },
 ]
 
-const ALL_VARS = VARIABLE_GROUPS.flatMap(g => g.vars)
+const ALL_VARS_KEYS = VARIABLE_GROUPS_STRUCT.flatMap(g => g.vars.map(v => v.key))
 
 function TemplateEditor({ templateName, onClose }: Props) {
+  const t = useI18n((s) => s.t)
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -85,7 +72,7 @@ function TemplateEditor({ templateName, onClose }: Props) {
       setContent(result.content)
       setFileType(result.type || '')
     } else {
-      setError(result.error || 'Fehler beim Laden')
+      setError(result.error || t('editor.loadError'))
     }
     setLoading(false)
   }
@@ -107,13 +94,13 @@ function TemplateEditor({ templateName, onClose }: Props) {
   const foundPlaceholders = content.match(/\{\{[^}]+\}\}/g) || []
   const foundKeys = [...new Set(foundPlaceholders.map(p => p.replace(/\{\{|\}\}/g, '')))]
 
-  const knownFound = foundKeys.filter(k => ALL_VARS.some(v => v.key === k) || /^(DATUM|BEGINN|ENDE|PAUSE|STUNDEN|BEMERKUNG)_\d+$/.test(k))
+  const knownFound = foundKeys.filter(k => ALL_VARS_KEYS.includes(k) || /^(DATUM|BEGINN|ENDE|PAUSE|STUNDEN|BEMERKUNG)_\d+$/.test(k))
   const unknownFound = foundKeys.filter(k => !knownFound.includes(k))
 
   const highlightedContent = content.replace(
     /\{\{([^}]+)\}\}/g,
     (match, key) => {
-      const isKnown = ALL_VARS.some(v => v.key === key) || /^(DATUM|BEGINN|ENDE|PAUSE|STUNDEN|BEMERKUNG)_\d+$/.test(key)
+      const isKnown = ALL_VARS_KEYS.includes(key) || /^(DATUM|BEGINN|ENDE|PAUSE|STUNDEN|BEMERKUNG)_\d+$/.test(key)
       return isKnown ? `██${key}██` : `??${key}??`
     }
   )
@@ -123,7 +110,7 @@ function TemplateEditor({ templateName, onClose }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col">
         <div className="flex items-center justify-between p-5 pb-3 border-b border-gray-200">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Vorlage prüfen</h3>
+            <h3 className="text-lg font-bold text-gray-900">{t('editor.title')}</h3>
             <p className="text-sm text-gray-500">{templateName}</p>
           </div>
           <button
@@ -136,7 +123,7 @@ function TemplateEditor({ templateName, onClose }: Props) {
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-gray-400">Lade Vorlage...</p>
+            <p className="text-gray-400">{t('editor.loading')}</p>
           </div>
         ) : error ? (
           <div className="flex-1 flex items-center justify-center">
@@ -147,21 +134,20 @@ function TemplateEditor({ templateName, onClose }: Props) {
             <div className="flex-1 flex flex-col p-4 overflow-hidden">
               <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-3 flex items-center justify-between">
                 <p className="text-sm text-blue-700">
-                  <strong>So gehts:</strong> Klicke rechts auf eine Variable, um sie zu kopieren.
-                  Öffne die Vorlage in Word/Excel und füge sie dort ein (Strg+V).
+                  {t('editor.howTo')}
                 </p>
                 <button
                   onClick={() => window.api.templates.openInEditor(templateName)}
                   className="btn-primary text-sm shrink-0 ml-4"
                 >
-                  In {fileType === 'word' ? 'Word' : 'Excel'} öffnen
+                  {t('editor.openEditor')}
                 </button>
               </div>
 
               {knownFound.length > 0 && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 mb-2">
                   <p className="text-sm text-emerald-700">
-                    <strong>{knownFound.length}</strong> Platzhalter erkannt:&nbsp;
+                    {t('editor.placeholdersFound', { n: knownFound.length })}:&nbsp;
                     {knownFound.map(k => `{{${k}}}`).join(', ')}
                   </p>
                 </div>
@@ -170,7 +156,7 @@ function TemplateEditor({ templateName, onClose }: Props) {
               {unknownFound.length > 0 && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 mb-2">
                   <p className="text-sm text-amber-700">
-                    <strong>{unknownFound.length}</strong> unbekannte Platzhalter:&nbsp;
+                    {t('editor.unknownPlaceholders', { n: unknownFound.length })}:&nbsp;
                     {unknownFound.map(k => `{{${k}}}`).join(', ')}
                   </p>
                 </div>
@@ -179,7 +165,7 @@ function TemplateEditor({ templateName, onClose }: Props) {
               {knownFound.length === 0 && unknownFound.length === 0 && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 mb-2">
                   <p className="text-sm text-amber-700">
-                    Keine Platzhalter in der Vorlage gefunden. Füge <code className="bg-amber-100 px-1 rounded">{`{{VARIABLE}}`}</code> in deine Word/Excel-Datei ein.
+                    {t('editor.noPlaceholders')}
                   </p>
                 </div>
               )}
@@ -210,27 +196,28 @@ function TemplateEditor({ templateName, onClose }: Props) {
             </div>
 
             <div className="w-72 border-l border-gray-200 overflow-y-auto p-4 shrink-0">
-              <h4 className="text-sm font-bold text-gray-700 mb-1">Variablen kopieren</h4>
+              <h4 className="text-sm font-bold text-gray-700 mb-1">{t('editor.copyVars')}</h4>
               <p className="text-xs text-gray-400 mb-4">
-                Klick kopiert die Variable. Füge sie dann in Word/Excel ein.
+                {t('editor.copyVarsDesc')}
               </p>
 
               {copied && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 mb-3">
                   <p className="text-xs text-emerald-700 font-medium">
-                    {`{{${copied}}}`} kopiert!
+                    {t('editor.copied', { var: `{{${copied}}}` })}
                   </p>
                 </div>
               )}
 
-              {VARIABLE_GROUPS.map((group) => (
-                <div key={group.title} className="mb-4">
+              {VARIABLE_GROUPS_STRUCT.map((group) => (
+                <div key={group.titleKey} className="mb-4">
                   <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    {group.title}
+                    {t(group.titleKey)}
                   </h5>
                   <div className="flex flex-wrap gap-1">
                     {group.vars.map((v) => {
                       const isUsed = knownFound.includes(v.key)
+                      const label = t(v.labelKey)
                       return (
                         <button
                           key={v.key}
@@ -240,7 +227,7 @@ function TemplateEditor({ templateName, onClose }: Props) {
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                               : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
                           }`}
-                          title={`${v.label} -- Klick zum Kopieren`}
+                          title={t('editor.clickToCopy', { label })}
                         >
                           {isUsed ? '✓ ' : ''}{`{{${v.key}}}`}
                         </button>
@@ -252,29 +239,32 @@ function TemplateEditor({ templateName, onClose }: Props) {
 
               <div className="mb-4">
                 <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                  Tageseinträge -- Alle 31 Tage
+                  {t('editor.dayEntries')}
                 </h5>
                 <p className="text-xs text-gray-400 mb-2">
-                  Kopiert alle 31 Zeilen auf einmal. In Excel die Zielzelle wählen und einfügen.
+                  {t('editor.copyAllHint')}
                 </p>
                 <div className="flex flex-wrap gap-1 mb-3">
-                  {DAY_VARS.map((v) => (
-                    <button
-                      key={`all-${v.base}`}
-                      onClick={() => copyAllDays(v.base, v.label)}
-                      className="text-xs px-2 py-1 rounded transition-colors border bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
-                      title={`Alle 31 ${v.label}-Platzhalter kopieren`}
-                    >
-                      {v.label} 1-31
-                    </button>
-                  ))}
+                  {DAY_VARS_STRUCT.map((v) => {
+                    const label = t(v.labelKey)
+                    return (
+                      <button
+                        key={`all-${v.base}`}
+                        onClick={() => copyAllDays(v.base, label)}
+                        className="text-xs px-2 py-1 rounded transition-colors border bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                        title={t('editor.copyAll', { label })}
+                      >
+                        {label} 1-31
+                      </button>
+                    )
+                  })}
                 </div>
 
                 <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                  Einzelner Tag
+                  {t('editor.singleDay')}
                 </h5>
                 <div className="flex items-center gap-2 mb-2">
-                  <label className="text-xs text-gray-500">Tag Nr.:</label>
+                  <label className="text-xs text-gray-500">{t('editor.dayNr')}</label>
                   <input
                     type="number"
                     min={1}
@@ -285,9 +275,10 @@ function TemplateEditor({ templateName, onClose }: Props) {
                   />
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {DAY_VARS.map((v) => {
+                  {DAY_VARS_STRUCT.map((v) => {
                     const fullKey = `${v.base}${dayNumber}`
                     const isUsed = knownFound.includes(fullKey)
+                    const label = t(v.labelKey)
                     return (
                       <button
                         key={v.base}
@@ -297,7 +288,7 @@ function TemplateEditor({ templateName, onClose }: Props) {
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                             : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
                         }`}
-                        title={`${v.label} Tag ${dayNumber} -- Klick zum Kopieren`}
+                        title={t('editor.clickToCopyDay', { label, n: dayNumber })}
                       >
                         {isUsed ? '✓ ' : ''}{`{{${fullKey}}}`}
                       </button>
@@ -311,10 +302,10 @@ function TemplateEditor({ templateName, onClose }: Props) {
 
         <div className="flex items-center justify-between p-4 border-t border-gray-200">
           <div className="text-xs text-gray-400">
-            {fileType === 'word' ? 'Word-Vorlage (.docx)' : 'Excel-Vorlage (.xlsx)'} -- Nur Vorschau
+            {t('editor.footer')}
           </div>
           <button onClick={onClose} className="btn-primary">
-            Schließen
+            {t('editor.close')}
           </button>
         </div>
       </div>
