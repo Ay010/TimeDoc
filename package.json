@@ -1,6 +1,6 @@
 {
   "name": "timedoc",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Stundentracker mit automatischem Word/Excel Export",
   "main": "dist-electron/main.js",
   "scripts": {
