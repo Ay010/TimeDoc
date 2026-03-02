@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSettingsStore } from '../stores/useSettingsStore'
 import { useEntryStore } from '../stores/useEntryStore'
+import { useCustomFieldsStore } from '../stores/useCustomFieldsStore'
 import { useI18n } from '../i18n'
 
 const MONTH_NAMES_DE = [
@@ -20,11 +21,16 @@ function EmailTemplate() {
   const [editSubject, setEditSubject] = useState('')
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [savedMsg, setSavedMsg] = useState(false)
+  const [monthOverride, setMonthOverride] = useState<{ year: number; month: number } | null>(null)
+  const [showMonthPicker, setShowMonthPicker] = useState(false)
+  const { fields: customFields, loadFields } = useCustomFieldsStore()
+
+  useEffect(() => { loadFields() }, [])
 
   const bodyTemplate = settings[BODY_KEY] || t('email.defaultBody')
   const subjectTemplate = settings[SUBJECT_KEY] || t('email.defaultSubject')
 
-  const emailMonth = useMemo(() => {
+  const autoMonth = useMemo(() => {
     const today = new Date()
     const day = today.getDate()
     const todayMonth = today.getMonth() + 1
@@ -37,6 +43,8 @@ function EmailTemplate() {
     }
     return { year: todayYear, month: todayMonth - 1 }
   }, [])
+
+  const emailMonth = monthOverride ?? autoMonth
 
   const replacements = useMemo(() => {
     const stundensatz = parseFloat(settings.stundensatz || '0')
@@ -58,7 +66,7 @@ function EmailTemplate() {
       return `${hrs}:${String(mins).padStart(2, '0')}`
     }
 
-    return {
+    const result: Record<string, string> = {
       NAME: settings.name || '',
       EMAIL: settings.email || '',
       MONAT: monthStr,
@@ -71,8 +79,14 @@ function EmailTemplate() {
       RECHNUNGSNUMMER: rechnungsnummer,
       LEISTUNGSZEITRAUM: `01.${String(eMonth).padStart(2, '0')}.${eYear} – ${String(lastDay).padStart(2, '0')}.${String(eMonth).padStart(2, '0')}.${eYear}`,
       AUFTRAGGEBER_NAME: settings.auftraggeber_name || '',
-    } as Record<string, string>
-  }, [settings, emailMonth, totalHours])
+    }
+
+    for (const f of customFields) {
+      result[`CUSTOM_${f.name}`] = f.value || ''
+    }
+
+    return result
+  }, [settings, emailMonth, totalHours, customFields])
 
   function fillTemplate(tmpl: string): string {
     let result = tmpl
@@ -120,6 +134,7 @@ function EmailTemplate() {
     { var: '{{STUNDENSATZ}}', desc: t('email.var.rate') },
     { var: '{{BETRAG}}', desc: t('email.var.total') },
     { var: '{{AUFTRAGGEBER_NAME}}', desc: t('email.var.client') },
+    ...customFields.map(f => ({ var: `{{CUSTOM_${f.name}}}`, desc: f.name })),
   ]
 
   function insertVar(varName: string, targetId: string, setter: (fn: (prev: string) => string) => void) {
@@ -153,9 +168,67 @@ function EmailTemplate() {
         </div>
       </div>
 
-      <p className="text-sm text-gray-500 mb-4">
-        {t('email.refMonth', { month: t(`month.${emailMonth.month - 1}`), year: String(emailMonth.year) })}
-      </p>
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <p className="text-sm text-gray-500">
+          {t('email.refMonth', { month: t(`month.${emailMonth.month - 1}`), year: String(emailMonth.year) })}
+        </p>
+        {!monthOverride && !showMonthPicker && (
+          <button
+            onClick={() => setShowMonthPicker(true)}
+            className="text-xs px-2 py-0.5 rounded border border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors"
+          >
+            {t('email.changeMonth')}
+          </button>
+        )}
+        {monthOverride && (
+          <button
+            onClick={() => { setMonthOverride(null); setShowMonthPicker(false) }}
+            className="text-xs px-2 py-0.5 rounded border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors"
+          >
+            {t('email.resetMonth')}
+          </button>
+        )}
+        {showMonthPicker && !monthOverride && (
+          <div className="flex items-center gap-1.5">
+            <select
+              className="text-xs px-2 py-1 rounded border border-gray-300 bg-white"
+              defaultValue={autoMonth.month}
+              id="email-month-select"
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i} value={i + 1}>{t(`month.${i}`)}</option>
+              ))}
+            </select>
+            <select
+              className="text-xs px-2 py-1 rounded border border-gray-300 bg-white"
+              defaultValue={autoMonth.year}
+              id="email-year-select"
+            >
+              {Array.from({ length: 5 }, (_, i) => {
+                const y = new Date().getFullYear() - 2 + i
+                return <option key={y} value={y}>{y}</option>
+              })}
+            </select>
+            <button
+              onClick={() => {
+                const m = parseInt((document.getElementById('email-month-select') as HTMLSelectElement).value)
+                const y = parseInt((document.getElementById('email-year-select') as HTMLSelectElement).value)
+                setMonthOverride({ year: y, month: m })
+                setShowMonthPicker(false)
+              }}
+              className="text-xs px-2 py-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+            >
+              OK
+            </button>
+            <button
+              onClick={() => setShowMonthPicker(false)}
+              className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+      </div>
 
       {editing ? (
         <div className="space-y-4">

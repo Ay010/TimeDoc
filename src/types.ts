@@ -28,6 +28,12 @@ export interface BackupInfo {
   size: number
 }
 
+export interface CustomField {
+  id: number
+  name: string
+  value: string
+}
+
 declare global {
   interface Window {
     onUpdate: {
@@ -69,6 +75,12 @@ declare global {
         writeContent: (templateName: string, content: string) => Promise<{ success: boolean; error?: string }>
         openInEditor: (templateName: string) => Promise<{ success: boolean; error?: string }>
         backup: (templateName: string) => Promise<{ success: boolean; path?: string; error?: string }>
+      }
+      customFields: {
+        getAll: () => Promise<CustomField[]>
+        add: (name: string, value: string) => Promise<{ success: boolean; error?: string }>
+        update: (id: number, name: string, value: string) => Promise<{ success: boolean; error?: string }>
+        delete: (id: number) => Promise<{ success: boolean }>
       }
       export: {
         generate: (year: number, month: number) => Promise<string[]>

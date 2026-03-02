@@ -42,7 +42,15 @@ function buildTemplateData(
   const today = new Date()
   const rechnungsdatum = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`
 
-  const data: Record<string, string> = {
+  const data: Record<string, string> = {}
+
+  for (const [key, val] of Object.entries(settings)) {
+    if (key.startsWith('CUSTOM_')) {
+      data[key] = val
+    }
+  }
+
+  Object.assign(data, {
     NAME: settings.name || '',
     ADRESSE_ZEILE1: settings.adresse_zeile1 || '',
     ADRESSE_ZEILE2: settings.adresse_zeile2 || '',
@@ -64,7 +72,7 @@ function buildTemplateData(
     BIC: settings.bic || '',
     BANK: settings.bank || '',
     LEISTUNGSZEITRAUM: `01.${String(month).padStart(2, '0')}.${year} – ${lastDayOfMonth(year, month)}.${String(month).padStart(2, '0')}.${year}`,
-  }
+  })
 
   for (let idx = 1; idx <= 31; idx++) {
     const entry = entries[idx - 1]

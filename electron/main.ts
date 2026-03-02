@@ -476,6 +476,34 @@ function done(v){document.title='PW:'+v}
     return { success: false, error: 'Datei nicht gefunden' }
   })
 
+  // --- Custom Fields ---
+  ipcMain.handle('customFields:getAll', () => {
+    return queryAll('SELECT * FROM custom_fields ORDER BY id')
+  })
+
+  ipcMain.handle('customFields:add', (_e, name: string, value: string) => {
+    try {
+      queryRun('INSERT INTO custom_fields (name, value) VALUES (?, ?)', [name, value])
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('customFields:update', (_e, id: number, name: string, value: string) => {
+    try {
+      queryRun('UPDATE custom_fields SET name = ?, value = ? WHERE id = ?', [name, value, id])
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('customFields:delete', (_e, id: number) => {
+    queryRun('DELETE FROM custom_fields WHERE id = ?', [id])
+    return { success: true }
+  })
+
   // --- Export ---
   ipcMain.handle('export:generate', async (_e, year: number, month: number) => {
     const entries = queryAll(
@@ -487,6 +515,11 @@ function done(v){document.title='PW:'+v}
     const settings: Record<string, string> = {}
     for (const row of settingsRows) {
       settings[row.key] = isSensitiveKey(row.key) ? decrypt(row.value) : row.value
+    }
+
+    const customFieldRows = queryAll('SELECT name, value FROM custom_fields')
+    for (const row of customFieldRows) {
+      settings[`CUSTOM_${row.name}`] = row.value || ''
     }
 
     const vorlagenDir = path.join(dataPath, 'vorlagen')

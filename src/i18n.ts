@@ -196,6 +196,9 @@ const de: Record<string, string> = {
   'email.copyAll': 'Alles kopieren',
   'email.copied': 'Kopiert!',
   'email.refMonth': 'Bezieht sich auf: {month} {year} (Vormonat, wechselt ab dem 25.)',
+  'email.autoMonth': 'Automatisch',
+  'email.changeMonth': 'Ändern',
+  'email.resetMonth': 'Zurücksetzen',
   'email.vars': 'Verfügbare Variablen (Klick zum Einfügen in fokussiertes Feld):',
   'email.to': 'An',
   'email.subject': 'Betreff',
@@ -232,6 +235,25 @@ const de: Record<string, string> = {
 
   // Language
   'lang.label': 'Sprache',
+
+  // Custom Fields
+  'customFields.title': 'Eigene Felder',
+  'customFields.description': 'Erstelle eigene Variablen, die du in deinen Vorlagen verwenden kannst.',
+  'customFields.name': 'Name',
+  'customFields.value': 'Wert',
+  'customFields.variable': 'Variable',
+  'customFields.add': 'Feld hinzufügen',
+  'customFields.save': 'Speichern',
+  'customFields.cancel': 'Abbrechen',
+  'customFields.delete': 'Löschen',
+  'customFields.edit': 'Bearbeiten',
+  'customFields.empty': 'Noch keine eigenen Felder erstellt.',
+  'customFields.namePlaceholder': 'z.B. Steuernummer',
+  'customFields.valuePlaceholder': 'z.B. 123/456/789',
+  'customFields.nameHint': 'Nur Buchstaben (A–Z, a–z)',
+  'customFields.nameError': 'Name darf nur Buchstaben enthalten.',
+  'customFields.nameExists': 'Ein Feld mit diesem Namen existiert bereits.',
+  'customFields.nameRequired': 'Name ist erforderlich.',
 
   // What's New
   'whatsNew.title': 'Neuigkeiten',
@@ -427,6 +449,9 @@ const en: Record<string, string> = {
   'email.copyAll': 'Copy all',
   'email.copied': 'Copied!',
   'email.refMonth': 'Refers to: {month} {year} (previous month, switches from the 25th)',
+  'email.autoMonth': 'Automatic',
+  'email.changeMonth': 'Change',
+  'email.resetMonth': 'Reset',
   'email.vars': 'Available variables (click to insert into focused field):',
   'email.to': 'To',
   'email.subject': 'Subject',
@@ -463,6 +488,25 @@ const en: Record<string, string> = {
 
   // Language
   'lang.label': 'Language',
+
+  // Custom Fields
+  'customFields.title': 'Custom Fields',
+  'customFields.description': 'Create custom variables to use in your templates.',
+  'customFields.name': 'Name',
+  'customFields.value': 'Value',
+  'customFields.variable': 'Variable',
+  'customFields.add': 'Add field',
+  'customFields.save': 'Save',
+  'customFields.cancel': 'Cancel',
+  'customFields.delete': 'Delete',
+  'customFields.edit': 'Edit',
+  'customFields.empty': 'No custom fields created yet.',
+  'customFields.namePlaceholder': 'e.g. TaxNumber',
+  'customFields.valuePlaceholder': 'e.g. 123/456/789',
+  'customFields.nameHint': 'Letters only (A–Z, a–z)',
+  'customFields.nameError': 'Name must contain only letters.',
+  'customFields.nameExists': 'A field with this name already exists.',
+  'customFields.nameRequired': 'Name is required.',
 
   // What's New
   'whatsNew.title': "What's New",

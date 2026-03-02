@@ -13,6 +13,26 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '1.5',
+    date: '2026-03-02',
+    highlights: [
+      {
+        title: { en: 'Custom Fields', de: 'Eigene Felder' },
+        description: {
+          en: 'Create your own variables in Settings and use them in your Word/Excel templates and email drafts.',
+          de: 'Erstelle eigene Variablen in den Einstellungen und verwende sie in deinen Word/Excel-Vorlagen und E-Mail-Entwürfen.',
+        },
+      },
+      {
+        title: { en: 'Email Month Selection', de: 'E-Mail Monat anpassen' },
+        description: {
+          en: 'Override the automatically calculated month in the email template to generate invoices for any period.',
+          de: 'Den automatisch berechneten Monat in der E-Mail-Vorlage manuell ändern, um Rechnungen für beliebige Zeiträume zu erstellen.',
+        },
+      },
+    ],
+  },
+  {
     version: '1.4',
     date: '2026-03-01',
     highlights: [

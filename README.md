@@ -19,7 +19,8 @@
 - **Hour Tracking** — Log daily work hours with start time, end time, break duration, and notes
 - **Template-Based Export** — Use your own Word (.docx) and Excel (.xlsx) templates with placeholders that get filled automatically
 - **Invoice & Timesheet Generation** — Export professional documents at the end of each month with one click
-- **Email Template** — Pre-filled email draft with all relevant data, ready to copy and send
+- **Email Template** — Pre-filled email draft with all relevant data, ready to copy and send — with optional month override
+- **Custom Fields** — Define your own variables in Settings and use them as placeholders in templates and emails
 - **Data Import** — Paste time entries from Excel or other sources and let the app parse and merge them
 - **Backup System** — Automatic daily backups, manual backup creation, and export/import to USB or any folder
 - **Sensitive Data Protection** — IBAN and BIC are encrypted (AES-256-GCM) and optionally password-protected

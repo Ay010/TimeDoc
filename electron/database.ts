@@ -55,6 +55,14 @@ export async function initDatabase(dataPath: string): Promise<SqlJsDatabase> {
     )
   `)
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS custom_fields (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      value TEXT DEFAULT ''
+    )
+  `)
+
   seedDefaults()
   saveDatabase()
 

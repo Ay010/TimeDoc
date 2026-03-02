@@ -29,7 +29,7 @@ function TitleBar() {
   }
 
   return (
-    <div className="title-bar flex items-center justify-between h-9 bg-white border-b border-gray-200 select-none shrink-0">
+    <div className="title-bar flex items-center justify-between h-9 bg-white border-b border-gray-200 select-none shrink-0 relative z-[60]">
       <div className="flex items-center gap-2 pl-3 drag-region">
         <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center">
           <span className="text-white font-bold text-[10px]">TD</span>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useI18n } from '../i18n'
+import { useCustomFieldsStore } from '../stores/useCustomFieldsStore'
 
 interface Props {
   templateName: string
@@ -53,6 +54,7 @@ const ALL_VARS_KEYS = VARIABLE_GROUPS_STRUCT.flatMap(g => g.vars.map(v => v.key)
 
 function TemplateEditor({ templateName, onClose }: Props) {
   const t = useI18n((s) => s.t)
+  const { fields: customFields, loadFields } = useCustomFieldsStore()
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -62,6 +64,7 @@ function TemplateEditor({ templateName, onClose }: Props) {
 
   useEffect(() => {
     loadContent()
+    loadFields()
   }, [templateName])
 
   async function loadContent() {
@@ -91,16 +94,18 @@ function TemplateEditor({ templateName, onClose }: Props) {
     setTimeout(() => setCopied(''), 3000)
   }
 
+  const customVarKeys = customFields.map(f => `CUSTOM_${f.name}`)
+
   const foundPlaceholders = content.match(/\{\{[^}]+\}\}/g) || []
   const foundKeys = [...new Set(foundPlaceholders.map(p => p.replace(/\{\{|\}\}/g, '')))]
 
-  const knownFound = foundKeys.filter(k => ALL_VARS_KEYS.includes(k) || /^(DATUM|BEGINN|ENDE|PAUSE|STUNDEN|BEMERKUNG)_\d+$/.test(k))
+  const knownFound = foundKeys.filter(k => ALL_VARS_KEYS.includes(k) || customVarKeys.includes(k) || /^(DATUM|BEGINN|ENDE|PAUSE|STUNDEN|BEMERKUNG)_\d+$/.test(k))
   const unknownFound = foundKeys.filter(k => !knownFound.includes(k))
 
   const highlightedContent = content.replace(
     /\{\{([^}]+)\}\}/g,
-    (match, key) => {
-      const isKnown = ALL_VARS_KEYS.includes(key) || /^(DATUM|BEGINN|ENDE|PAUSE|STUNDEN|BEMERKUNG)_\d+$/.test(key)
+    (_match, key) => {
+      const isKnown = ALL_VARS_KEYS.includes(key) || customVarKeys.includes(key) || /^(DATUM|BEGINN|ENDE|PAUSE|STUNDEN|BEMERKUNG)_\d+$/.test(key)
       return isKnown ? `██${key}██` : `??${key}??`
     }
   )
@@ -296,6 +301,34 @@ function TemplateEditor({ templateName, onClose }: Props) {
                   })}
                 </div>
               </div>
+
+              {customFields.length > 0 && (
+                <div className="mb-4">
+                  <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    {t('customFields.title')}
+                  </h5>
+                  <div className="flex flex-wrap gap-1">
+                    {customFields.map((f) => {
+                      const varKey = `CUSTOM_${f.name}`
+                      const isUsed = knownFound.includes(varKey)
+                      return (
+                        <button
+                          key={f.id}
+                          onClick={() => copyVariable(varKey)}
+                          className={`text-xs px-2 py-1 rounded transition-colors border ${
+                            isUsed
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                              : 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100'
+                          }`}
+                          title={f.value || f.name}
+                        >
+                          {isUsed ? '✓ ' : ''}{`{{${varKey}}}`}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

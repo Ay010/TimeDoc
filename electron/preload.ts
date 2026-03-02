@@ -45,6 +45,12 @@ contextBridge.exposeInMainWorld('api', {
     openInEditor: (templateName: string) => ipcRenderer.invoke('templates:openInEditor', templateName),
     backup: (templateName: string) => ipcRenderer.invoke('templates:backup', templateName),
   },
+  customFields: {
+    getAll: () => ipcRenderer.invoke('customFields:getAll'),
+    add: (name: string, value: string) => ipcRenderer.invoke('customFields:add', name, value),
+    update: (id: number, name: string, value: string) => ipcRenderer.invoke('customFields:update', id, name, value),
+    delete: (id: number) => ipcRenderer.invoke('customFields:delete', id),
+  },
   export: {
     generate: (year: number, month: number) => ipcRenderer.invoke('export:generate', year, month),
     openFolder: () => ipcRenderer.invoke('export:openFolder'),

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSettingsStore } from '../stores/useSettingsStore'
+import { useCustomFieldsStore } from '../stores/useCustomFieldsStore'
 import { useI18n, type Lang } from '../i18n'
 
 type SettingField = { key: string; label: string; placeholder: string; sensitive: boolean }
@@ -110,6 +111,14 @@ function SettingsPanel() {
   const [authLoading, setAuthLoading] = useState(false)
   const [authError, setAuthError] = useState('')
   const [hasPassword, setHasPassword] = useState(false)
+  const { fields: customFields, loadFields, addField, updateField, deleteField } = useCustomFieldsStore()
+  const [showAddField, setShowAddField] = useState(false)
+  const [newFieldName, setNewFieldName] = useState('')
+  const [newFieldValue, setNewFieldValue] = useState('')
+  const [fieldError, setFieldError] = useState('')
+  const [editingFieldId, setEditingFieldId] = useState<number | null>(null)
+  const [editFieldName, setEditFieldName] = useState('')
+  const [editFieldValue, setEditFieldValue] = useState('')
 
   useEffect(() => {
     window.api.auth.hasPassword().then(setHasPassword)
@@ -117,6 +126,7 @@ function SettingsPanel() {
 
   useEffect(() => {
     loadSettings()
+    loadFields()
   }, [])
 
   useEffect(() => {
@@ -350,6 +360,162 @@ function SettingsPanel() {
           )}
         </div>
       ))}
+
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">{t('customFields.title')}</h3>
+            <p className="text-sm text-gray-400 mt-0.5">{t('customFields.description')}</p>
+          </div>
+          {!showAddField && (
+            <button
+              onClick={() => { setShowAddField(true); setNewFieldName(''); setNewFieldValue(''); setFieldError('') }}
+              className="btn-secondary text-sm"
+            >
+              + {t('customFields.add')}
+            </button>
+          )}
+        </div>
+
+        {showAddField && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <label className="text-xs font-medium text-gray-600 mb-1 block">{t('customFields.name')}</label>
+                <input
+                  type="text"
+                  value={newFieldName}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^a-zA-ZäöüÄÖÜß]/g, '')
+                    setNewFieldName(val)
+                    setFieldError('')
+                  }}
+                  placeholder={t('customFields.namePlaceholder')}
+                  className="input-field w-full text-sm"
+                />
+                <p className="text-xs text-gray-400 mt-1">{t('customFields.nameHint')}</p>
+              </div>
+              <div className="flex-1">
+                <label className="text-xs font-medium text-gray-600 mb-1 block">{t('customFields.value')}</label>
+                <input
+                  type="text"
+                  value={newFieldValue}
+                  onChange={(e) => setNewFieldValue(e.target.value)}
+                  placeholder={t('customFields.valuePlaceholder')}
+                  className="input-field w-full text-sm"
+                />
+                <p className="text-xs text-gray-400 mt-1 invisible">_</p>
+              </div>
+            </div>
+            {fieldError && <p className="text-xs text-red-600 font-medium">{fieldError}</p>}
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowAddField(false)} className="btn-secondary text-sm">
+                {t('customFields.cancel')}
+              </button>
+              <button
+                onClick={async () => {
+                  const name = newFieldName.trim()
+                  if (!name) { setFieldError(t('customFields.nameRequired')); return }
+                  if (!/^[a-zA-ZäöüÄÖÜß]+$/.test(name)) { setFieldError(t('customFields.nameError')); return }
+                  if (customFields.some(f => f.name.toLowerCase() === name.toLowerCase())) { setFieldError(t('customFields.nameExists')); return }
+                  const result = await addField(name, newFieldValue)
+                  if (result.success) {
+                    setShowAddField(false)
+                    setNewFieldName('')
+                    setNewFieldValue('')
+                  } else {
+                    setFieldError(result.error || t('customFields.nameExists'))
+                  }
+                }}
+                className="btn-primary text-sm"
+              >
+                {t('customFields.add')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {customFields.length === 0 && !showAddField ? (
+          <p className="text-sm text-gray-400 italic">{t('customFields.empty')}</p>
+        ) : (
+          <div className="space-y-2">
+            {customFields.map((field) => (
+              <div key={field.id} className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                {editingFieldId === field.id ? (
+                  <>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={editFieldName}
+                        onChange={(e) => {
+                          setEditFieldName(e.target.value.replace(/[^a-zA-ZäöüÄÖÜß]/g, ''))
+                          setFieldError('')
+                        }}
+                        className="input-field w-full text-sm"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={editFieldValue}
+                        onChange={(e) => setEditFieldValue(e.target.value)}
+                        className="input-field w-full text-sm"
+                      />
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <button
+                        onClick={async () => {
+                          const name = editFieldName.trim()
+                          if (!name) { setFieldError(t('customFields.nameRequired')); return }
+                          if (!/^[a-zA-ZäöüÄÖÜß]+$/.test(name)) { setFieldError(t('customFields.nameError')); return }
+                          if (customFields.some(f => f.id !== field.id && f.name.toLowerCase() === name.toLowerCase())) { setFieldError(t('customFields.nameExists')); return }
+                          const result = await updateField(field.id, name, editFieldValue)
+                          if (result.success) {
+                            setEditingFieldId(null)
+                            setFieldError('')
+                          }
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                      >
+                        {t('customFields.save')}
+                      </button>
+                      <button
+                        onClick={() => { setEditingFieldId(null); setFieldError('') }}
+                        className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors"
+                      >
+                        {t('customFields.cancel')}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800">{field.name}</p>
+                      <p className="text-xs text-gray-400 font-mono">{`{{CUSTOM_${field.name}}}`}</p>
+                    </div>
+                    <p className="flex-1 text-sm text-gray-600 truncate">{field.value || '–'}</p>
+                    <div className="flex gap-1 shrink-0">
+                      <button
+                        onClick={() => { setEditingFieldId(field.id); setEditFieldName(field.name); setEditFieldValue(field.value); setFieldError('') }}
+                        className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors"
+                      >
+                        {t('customFields.edit')}
+                      </button>
+                      <button
+                        onClick={() => deleteField(field.id)}
+                        className="text-xs px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+                      >
+                        {t('customFields.delete')}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+            {fieldError && editingFieldId !== null && <p className="text-xs text-red-600 font-medium">{fieldError}</p>}
+          </div>
+        )}
+      </div>
 
       {showImport && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowImport(false)}>
