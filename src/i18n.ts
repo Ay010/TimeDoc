@@ -54,9 +54,17 @@ const de: Record<string, string> = {
 
   // ImportDialog
   'import.title': 'Daten importieren',
-  'import.description': 'Kopiere deine Stunden-Daten aus Excel oder einer Tabelle und füge sie hier ein. Die App erkennt automatisch Datum, Beginn, Ende, Pause und Arbeitsstunden.',
-  'import.format': 'Erwartetes Format (Tab-getrennt): Datum • Beginn • Ende • Pause • Arbeitsstunden • Bemerkung',
-  'import.tip': 'Tipp: Daten in einem anderen Format? Gib sie einfach einer KI (z.B. ChatGPT) und bitte sie, die Daten ins Format DD.MM.YY TAB HH:MM TAB HH:MM TAB HH:MM TAB H:MM umzuwandeln. Dann hier einfügen.',
+  'import.description': 'Kopiere deine Stunden-Daten aus Excel, einer Tabelle oder einem beliebigen Textformat und füge sie hier ein. Die App erkennt automatisch Datum, Beginn, Ende, Pause und Arbeitsstunden — egal ob Tab, Semikolon, Komma oder Leerzeichen als Trenner.',
+  'import.format': 'Unterstützte Formate: Tab/Semikolon/Komma-getrennt • Verschiedene Datumsformate (01.03.26, 2026-03-01, 1. März, March 1) • Uhrzeiten (9:00, 9h, 9 Uhr, 2:30 PM, 0900) • Nur-Stunden-Zeilen (01.03. — 8h)',
+  'import.formatsTitle': 'Unterstützte Formate',
+  'import.formatsDate': 'Datum',
+  'import.formatsTime': 'Uhrzeit',
+  'import.formatsSeparator': 'Trennzeichen',
+  'import.formatsBreak': 'Pause',
+  'import.formatsSpaces': 'Leerzeichen',
+  'import.formatsExtra': 'Kopfzeilen werden automatisch übersprungen. Nur-Stunden-Zeilen (z.B. 01.03. — 8h) werden ebenfalls erkannt.',
+  'import.tip': 'Tipp: Einfach einfügen — die App erkennt die meisten Formate automatisch.',
+  'import.tipAI': 'Daten werden trotzdem nicht erkannt? Gib sie einer KI (z.B. ChatGPT) und bitte sie, die Daten ins Format DD.MM.YY TAB HH:MM TAB HH:MM TAB HH:MM TAB H:MM umzuwandeln.',
   'import.placeholder': '01.01.26\t13:00\t14:30\t0:00\t1:30\n02.01.26\t9:00\t10:45\t0:00\t1:45\n...',
   'import.detect': 'Daten erkennen',
   'import.back': 'Zurück',
@@ -329,9 +337,17 @@ const en: Record<string, string> = {
 
   // ImportDialog
   'import.title': 'Import data',
-  'import.description': 'Copy your time data from Excel or a spreadsheet and paste it here. The app automatically detects date, start, end, break, and work hours.',
-  'import.format': 'Expected format (tab-separated): Date • Start • End • Break • Hours • Notes',
-  'import.tip': 'Tip: Data in a different format? Just give it to an AI (e.g. ChatGPT) and ask it to convert to DD.MM.YY TAB HH:MM TAB HH:MM TAB HH:MM TAB H:MM. Then paste here.',
+  'import.description': 'Copy your time data from Excel, a spreadsheet, or any text format and paste it here. The app automatically detects date, start, end, break, and work hours — regardless of whether tabs, semicolons, commas, or spaces are used as separators.',
+  'import.format': 'Supported formats: Tab/semicolon/comma-separated • Various date formats (01.03.26, 2026-03-01, 1 March, March 1) • Time formats (9:00, 9h, 9 Uhr, 2:30 PM, 0900) • Hours-only lines (01.03. — 8h)',
+  'import.formatsTitle': 'Supported Formats',
+  'import.formatsDate': 'Date',
+  'import.formatsTime': 'Time',
+  'import.formatsSeparator': 'Separator',
+  'import.formatsBreak': 'Break',
+  'import.formatsSpaces': 'Spaces',
+  'import.formatsExtra': 'Headers are automatically skipped. Hours-only lines (e.g. 01.03. — 8h) are also recognized.',
+  'import.tip': 'Tip: Just paste — the app recognizes most formats automatically.',
+  'import.tipAI': 'Data still not recognized? Give it to an AI (e.g. ChatGPT) and ask it to convert to DD.MM.YY TAB HH:MM TAB HH:MM TAB HH:MM TAB H:MM format.',
   'import.placeholder': '01.01.26\t13:00\t14:30\t0:00\t1:30\n02.01.26\t9:00\t10:45\t0:00\t1:45\n...',
   'import.detect': 'Detect data',
   'import.back': 'Back',
@@ -568,14 +584,8 @@ function loadLang(): Lang {
   return 'en'
 }
 
-export const useI18n = create<I18nState>((set, get) => ({
-  lang: loadLang(),
-  setLang: (lang: Lang) => {
-    localStorage.setItem('timedoc-lang', lang)
-    set({ lang })
-  },
-  t: (key: string, params?: Record<string, string | number>) => {
-    const { lang } = get()
+function createT(lang: Lang) {
+  return (key: string, params?: Record<string, string | number>) => {
     let text = translations[lang][key] ?? translations['en'][key] ?? key
     if (params) {
       for (const [k, v] of Object.entries(params)) {
@@ -583,5 +593,16 @@ export const useI18n = create<I18nState>((set, get) => ({
       }
     }
     return text
+  }
+}
+
+const initialLang = loadLang()
+
+export const useI18n = create<I18nState>((set) => ({
+  lang: initialLang,
+  setLang: (lang: Lang) => {
+    localStorage.setItem('timedoc-lang', lang)
+    set({ lang, t: createT(lang) })
   },
+  t: createT(initialLang),
 }))

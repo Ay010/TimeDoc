@@ -22,7 +22,7 @@
 - **Email Template** — Pre-filled email draft with all relevant data, ready to copy and send — with optional month override
 - **Contact Us** — Send feedback, bug reports, or feature requests directly from the app with mail client selection (Default, Outlook.com, Gmail, Yahoo Mail, Thunderbird)
 - **Custom Fields** — Define your own variables in Settings and use them as placeholders in templates and emails
-- **Data Import** — Paste time entries from Excel or other sources and let the app parse and merge them
+- **Smart Data Import** — Paste time entries from any source — supports tabs, semicolons, commas, multiple date/time formats (DD.MM.YY, 2026-03-01, March 1, 9h, 2:30 PM, ...), header detection, and hours-only lines
 - **Backup System** — Automatic daily backups, manual backup creation, and export/import to USB or any folder
 - **Sensitive Data Protection** — IBAN and BIC are encrypted (AES-256-GCM) and optionally password-protected
 - **Multi-Language** — Full English and German support with a language toggle in Settings
