@@ -5,6 +5,8 @@ release/
 data/
 *.db
 .specstory/
+.cursorindexingignore
+.cursor/
 .encryption-key
 *.blockmap
 *.exe
