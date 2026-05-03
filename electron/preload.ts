@@ -55,8 +55,17 @@ contextBridge.exposeInMainWorld('api', {
     delete: (id: number) => ipcRenderer.invoke('customFields:delete', id),
   },
   export: {
-    generate: (year: number, month: number) => ipcRenderer.invoke('export:generate', year, month),
+    generate: (year: number, month: number, selection?: {
+      builtin?: { excel?: boolean; pdf?: boolean }
+      userTemplates?: string[] | null
+    }) => ipcRenderer.invoke('export:generate', year, month, selection),
     openFolder: () => ipcRenderer.invoke('export:openFolder'),
+  },
+  builtin: {
+    getPlaceholders: () => ipcRenderer.invoke('builtin:getPlaceholders'),
+    previewHtml: (year: number, month: number) => ipcRenderer.invoke('builtin:previewHtml', year, month),
+    exportExcel: (year: number, month: number) => ipcRenderer.invoke('builtin:exportExcel', year, month),
+    exportPdf: (year: number, month: number) => ipcRenderer.invoke('builtin:exportPdf', year, month),
   },
   backup: {
     create: () => ipcRenderer.invoke('backup:create'),

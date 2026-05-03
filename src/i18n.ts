@@ -236,6 +236,32 @@ const de: Record<string, string> = {
   'export.success': '{n} Datei(en) erfolgreich exportiert!',
   'export.error': 'Fehler beim Export. Bitte Vorlagen prüfen.',
 
+  // Built-in Template
+  'builtin.title': 'Vorgegebene Vorlage',
+  'builtin.description': 'Ein fertiger Stundenzettel – ohne Upload direkt nutzbar. Felder werden automatisch mit deinen Daten gefüllt.',
+  'builtin.badge': 'Eingebaut',
+  'builtin.currentMonth': 'Aktueller Monat',
+  'builtin.preview': 'Vorschau anzeigen',
+  'builtin.previewTitle': 'Vorschau – Stundenzettel',
+  'builtin.downloadExcel': 'Als Excel speichern',
+  'builtin.downloadPdf': 'Als PDF speichern',
+  'builtin.loading': 'Lädt…',
+  'builtin.savedExcel': 'Excel-Datei im Export-Ordner gespeichert.',
+  'builtin.savedPdf': 'PDF-Datei im Export-Ordner gespeichert.',
+  'builtin.error': 'Fehler beim Erstellen der Datei.',
+  'builtin.fieldsTitle': 'Verwendete Felder (Platzhalter)',
+
+  // Export Dialog
+  'exportDialog.title': 'Monat exportieren',
+  'exportDialog.description': 'Wähle aus, welche Vorlagen für diesen Monat exportiert werden sollen.',
+  'exportDialog.builtinSection': 'Eingebaute Vorlage (Stundenzettel)',
+  'exportDialog.builtinExcel': 'Eingebauter Stundenzettel als Excel',
+  'exportDialog.builtinPdf': 'Eingebauter Stundenzettel als PDF',
+  'exportDialog.userSection': 'Eigene hochgeladene Vorlagen',
+  'exportDialog.noUserTemplates': 'Noch keine eigenen Vorlagen hochgeladen.',
+  'exportDialog.cancel': 'Abbrechen',
+  'exportDialog.run': 'Jetzt exportieren',
+
   // TitleBar
   'titlebar.minimize': 'Minimieren',
   'titlebar.restore': 'Wiederherstellen',
@@ -518,6 +544,30 @@ const en: Record<string, string> = {
   'export.noTemplates': 'No templates found. Please upload templates first.',
   'export.success': '{n} file(s) exported successfully!',
   'export.error': 'Export failed. Please check your templates.',
+
+  'builtin.title': 'Built-in template',
+  'builtin.description': 'A ready-to-use timesheet — no upload required. Fields are automatically filled with your data.',
+  'builtin.badge': 'Built-in',
+  'builtin.currentMonth': 'Current month',
+  'builtin.preview': 'Show preview',
+  'builtin.previewTitle': 'Preview – Timesheet',
+  'builtin.downloadExcel': 'Save as Excel',
+  'builtin.downloadPdf': 'Save as PDF',
+  'builtin.loading': 'Loading…',
+  'builtin.savedExcel': 'Excel file saved to export folder.',
+  'builtin.savedPdf': 'PDF file saved to export folder.',
+  'builtin.error': 'Failed to create the file.',
+  'builtin.fieldsTitle': 'Fields used (placeholders)',
+
+  'exportDialog.title': 'Export month',
+  'exportDialog.description': 'Choose which templates should be exported for this month.',
+  'exportDialog.builtinSection': 'Built-in template (timesheet)',
+  'exportDialog.builtinExcel': 'Built-in timesheet as Excel',
+  'exportDialog.builtinPdf': 'Built-in timesheet as PDF',
+  'exportDialog.userSection': 'Your uploaded templates',
+  'exportDialog.noUserTemplates': 'No custom templates uploaded yet.',
+  'exportDialog.cancel': 'Cancel',
+  'exportDialog.run': 'Export now',
 
   // TitleBar
   'titlebar.minimize': 'Minimize',

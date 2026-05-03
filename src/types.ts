@@ -86,8 +86,21 @@ declare global {
         delete: (id: number) => Promise<{ success: boolean }>
       }
       export: {
-        generate: (year: number, month: number) => Promise<string[]>
+        generate: (
+          year: number,
+          month: number,
+          selection?: {
+            builtin?: { excel?: boolean; pdf?: boolean }
+            userTemplates?: string[] | null
+          }
+        ) => Promise<string[]>
         openFolder: () => Promise<void>
+      }
+      builtin: {
+        getPlaceholders: () => Promise<{ id: string; label: string }[]>
+        previewHtml: (year: number, month: number) => Promise<string>
+        exportExcel: (year: number, month: number) => Promise<string>
+        exportPdf: (year: number, month: number) => Promise<string>
       }
       backup: {
         create: () => Promise<string>

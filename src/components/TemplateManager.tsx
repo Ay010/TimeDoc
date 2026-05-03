@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import type { TemplateFile } from '../types'
 import TemplateEditor from './TemplateEditor'
 import EmailTemplate from './EmailTemplate'
+import BuiltinTemplateSection from './BuiltinTemplateSection'
 import { useI18n } from '../i18n'
 
 function TemplateManager() {
@@ -42,6 +43,8 @@ function TemplateManager() {
           {message}
         </div>
       )}
+
+      <BuiltinTemplateSection />
 
       <div className="card">
         <h3 className="text-lg font-semibold mb-4">{t('templates.upload')}</h3>

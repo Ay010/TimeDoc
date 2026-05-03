@@ -4,6 +4,7 @@ import { autoUpdater } from 'electron-updater'
 import { initDatabase, getDatabase, saveDatabase } from './database'
 import { createBackup, restoreBackup, listBackups, autoBackup } from './backup'
 import { exportWord, exportExcel } from './document-engine'
+import { generateBuiltinExcel, getBuiltinPreviewHtml, getBuiltinPlaceholders } from './builtin-template'
 import { initEncryption, encrypt, decrypt, isSensitiveKey, hashPassword } from './crypto'
 import fs from 'fs'
 
@@ -513,7 +514,7 @@ function done(v){document.title='PW:'+v}
   })
 
   // --- Export ---
-  ipcMain.handle('export:generate', async (_e, year: number, month: number) => {
+  function loadMonthContext(year: number, month: number) {
     const entries = queryAll(
       'SELECT * FROM entries WHERE date >= ? AND date <= ? ORDER BY date',
       [`${year}-${String(month).padStart(2, '0')}-01`, `${year}-${String(month).padStart(2, '0')}-31`]
@@ -530,15 +531,87 @@ function done(v){document.title='PW:'+v}
       settings[`CUSTOM_${row.name}`] = row.value || ''
     }
 
+    return { entries, settings }
+  }
+
+  async function renderHtmlToPdf(outputPath: string, html: string): Promise<void> {
+    const win = new BrowserWindow({
+      show: false,
+      webPreferences: { offscreen: true, contextIsolation: true, nodeIntegration: false },
+    })
+    try {
+      await win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html))
+      const pdf = await win.webContents.printToPDF({
+        printBackground: true,
+        pageSize: 'A4',
+        margins: { top: 0.4, bottom: 0.4, left: 0.4, right: 0.4 },
+      })
+      fs.writeFileSync(outputPath, pdf)
+    } finally {
+      win.destroy()
+    }
+  }
+
+  function buildOutName(settings: Record<string, string>, year: number, month: number, ext: string, docType: string): string {
+    const fullName = (settings.name || 'Export').trim().replace(/\s+/g, '-')
+    return `${docType}_${fullName}_${year}-${String(month).padStart(2, '0')}${ext}`
+  }
+
+  ipcMain.handle('builtin:getPlaceholders', () => {
+    return getBuiltinPlaceholders()
+  })
+
+  ipcMain.handle('builtin:previewHtml', (_e, year: number, month: number) => {
+    const { entries, settings } = loadMonthContext(year, month)
+    return getBuiltinPreviewHtml(entries, settings, year, month)
+  })
+
+  ipcMain.handle('builtin:exportExcel', async (_e, year: number, month: number) => {
+    const { entries, settings } = loadMonthContext(year, month)
+    const exportDir = path.join(dataPath, 'exporte')
+    if (!fs.existsSync(exportDir)) fs.mkdirSync(exportDir, { recursive: true })
+    const outName = buildOutName(settings, year, month, '.xlsx', 'Stundenzettel-Standard')
+    const outPath = path.join(exportDir, outName)
+    await generateBuiltinExcel(outPath, entries, settings, year, month)
+    return outPath
+  })
+
+  ipcMain.handle('builtin:exportPdf', async (_e, year: number, month: number) => {
+    const { entries, settings } = loadMonthContext(year, month)
+    const exportDir = path.join(dataPath, 'exporte')
+    if (!fs.existsSync(exportDir)) fs.mkdirSync(exportDir, { recursive: true })
+    const outName = buildOutName(settings, year, month, '.pdf', 'Stundenzettel-Standard')
+    const outPath = path.join(exportDir, outName)
+    const html = getBuiltinPreviewHtml(entries, settings, year, month)
+    await renderHtmlToPdf(outPath, html)
+    return outPath
+  })
+
+  ipcMain.handle('export:generate', async (
+    _e,
+    year: number,
+    month: number,
+    selection?: {
+      builtin?: { excel?: boolean; pdf?: boolean }
+      userTemplates?: string[] | null
+    }
+  ) => {
+    const { entries, settings } = loadMonthContext(year, month)
+
     const vorlagenDir = path.join(dataPath, 'vorlagen')
     const exportDir = path.join(dataPath, 'exporte')
-    const monthStr = `${year}-${String(month).padStart(2, '0')}`
+    if (!fs.existsSync(exportDir)) fs.mkdirSync(exportDir, { recursive: true })
 
     const results: string[] = []
 
-    const templates = fs.existsSync(vorlagenDir)
+    const allUserTemplates = fs.existsSync(vorlagenDir)
       ? fs.readdirSync(vorlagenDir).filter(f => (f.endsWith('.docx') || f.endsWith('.xlsx')) && !f.startsWith('~$'))
       : []
+
+    const userSelection = selection?.userTemplates
+    const templates = userSelection === undefined
+      ? allUserTemplates
+      : (userSelection === null ? [] : allUserTemplates.filter(t => userSelection.includes(t)))
 
     for (const template of templates) {
       const templatePath = path.join(vorlagenDir, template)
@@ -548,10 +621,8 @@ function done(v){document.title='PW:'+v}
         [template]
       )
 
-      const fullName = (settings.name || 'Export').trim().replace(/\s+/g, '-')
       const docType = ext === '.docx' ? 'Rechnung' : 'Stundenzettel'
-      const outName = `${docType}_${fullName}_${year}-${String(month).padStart(2, '0')}${ext}`
-      const outPath = path.join(exportDir, outName)
+      const outPath = path.join(exportDir, buildOutName(settings, year, month, ext, docType))
 
       if (ext === '.docx') {
         await exportWord(templatePath, outPath, entries, settings, mappings, year, month)
@@ -562,7 +633,17 @@ function done(v){document.title='PW:'+v}
       }
     }
 
-    
+    if (selection?.builtin?.excel) {
+      const outPath = path.join(exportDir, buildOutName(settings, year, month, '.xlsx', 'Stundenzettel-Standard'))
+      await generateBuiltinExcel(outPath, entries, settings, year, month)
+      results.push(outPath)
+    }
+    if (selection?.builtin?.pdf) {
+      const outPath = path.join(exportDir, buildOutName(settings, year, month, '.pdf', 'Stundenzettel-Standard'))
+      const html = getBuiltinPreviewHtml(entries, settings, year, month)
+      await renderHtmlToPdf(outPath, html)
+      results.push(outPath)
+    }
 
     return results
   })
