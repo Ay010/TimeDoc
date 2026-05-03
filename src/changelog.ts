@@ -13,6 +13,26 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '1.7',
+    date: '2026-05-03',
+    highlights: [
+      {
+        title: { en: 'Built-in Timesheet Template', de: 'Eingebaute Stundenzettel-Vorlage' },
+        description: {
+          en: 'Create a ready-to-use timesheet without uploading a template, including Excel and PDF export.',
+          de: 'Erstelle einen fertigen Stundenzettel ohne eigene Vorlage, inklusive Excel- und PDF-Export.',
+        },
+      },
+      {
+        title: { en: 'Export Selection', de: 'Export-Auswahl' },
+        description: {
+          en: 'Choose which built-in and uploaded templates should be exported for the selected month.',
+          de: 'Wähle aus, welche eingebauten und hochgeladenen Vorlagen für den ausgewählten Monat exportiert werden.',
+        },
+      },
+    ],
+  },
+  {
     version: '1.6',
     date: '2026-03-02',
     highlights: [
