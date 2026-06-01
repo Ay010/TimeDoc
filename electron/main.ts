@@ -3,7 +3,7 @@ import path from 'path'
 import { autoUpdater } from 'electron-updater'
 import { initDatabase, getDatabase, saveDatabase } from './database'
 import { createBackup, restoreBackup, listBackups, autoBackup } from './backup'
-import { exportWord, exportExcel } from './document-engine'
+import { exportWord, exportExcel, docxToHtml, xlsxToHtml } from './document-engine'
 import { generateBuiltinExcel, getBuiltinPreviewHtml, getBuiltinPlaceholders } from './builtin-template'
 import { initEncryption, encrypt, decrypt, isSensitiveKey, hashPassword } from './crypto'
 import fs from 'fs'
@@ -594,6 +594,7 @@ function done(v){document.title='PW:'+v}
     selection?: {
       builtin?: { excel?: boolean; pdf?: boolean }
       userTemplates?: string[] | null
+      userTemplatesPdf?: string[] | null
     }
   ) => {
     const { entries, settings } = loadMonthContext(year, month)
@@ -613,6 +614,8 @@ function done(v){document.title='PW:'+v}
       ? allUserTemplates
       : (userSelection === null ? [] : allUserTemplates.filter(t => userSelection.includes(t)))
 
+    const pdfTemplates = selection?.userTemplatesPdf || []
+
     for (const template of templates) {
       const templatePath = path.join(vorlagenDir, template)
       const ext = path.extname(template).toLowerCase()
@@ -631,6 +634,32 @@ function done(v){document.title='PW:'+v}
         await exportExcel(templatePath, outPath, entries, settings, mappings, year, month)
         results.push(outPath)
       }
+    }
+
+    for (const template of pdfTemplates) {
+      const templatePath = path.join(vorlagenDir, template)
+      const ext = path.extname(template).toLowerCase()
+      const mappings = queryAll(
+        'SELECT * FROM template_mappings WHERE template_name = ?',
+        [template]
+      )
+
+      const docType = ext === '.docx' ? 'Rechnung' : 'Stundenzettel'
+      const tmpPath = path.join(exportDir, `_tmp_${template}`)
+      const pdfPath = path.join(exportDir, buildOutName(settings, year, month, '.pdf', docType))
+
+      if (ext === '.docx') {
+        await exportWord(templatePath, tmpPath, entries, settings, mappings, year, month)
+        const html = await docxToHtml(tmpPath)
+        await renderHtmlToPdf(pdfPath, html)
+        fs.unlinkSync(tmpPath)
+      } else if (ext === '.xlsx') {
+        await exportExcel(templatePath, tmpPath, entries, settings, mappings, year, month)
+        const html = await xlsxToHtml(tmpPath)
+        await renderHtmlToPdf(pdfPath, html)
+        fs.unlinkSync(tmpPath)
+      }
+      results.push(pdfPath)
     }
 
     if (selection?.builtin?.excel) {

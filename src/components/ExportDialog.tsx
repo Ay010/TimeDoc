@@ -9,10 +9,13 @@ interface Props {
   onDone: (files: string[]) => void
 }
 
+type ExportFormat = 'original' | 'pdf' | 'both'
+
 function ExportDialog({ year, month, onClose, onDone }: Props) {
   const t = useI18n((s) => s.t)
   const [userTemplates, setUserTemplates] = useState<TemplateFile[]>([])
   const [selectedUser, setSelectedUser] = useState<Record<string, boolean>>({})
+  const [userFormats, setUserFormats] = useState<Record<string, ExportFormat>>({})
   const [builtinExcel, setBuiltinExcel] = useState(true)
   const [builtinPdf, setBuiltinPdf] = useState(false)
   const [running, setRunning] = useState(false)
@@ -22,8 +25,10 @@ function ExportDialog({ year, month, onClose, onDone }: Props) {
     window.api.templates.list().then((list) => {
       setUserTemplates(list)
       const init: Record<string, boolean> = {}
-      list.forEach((l) => { init[l.name] = true })
+      const formats: Record<string, ExportFormat> = {}
+      list.forEach((l) => { init[l.name] = true; formats[l.name] = 'original' })
       setSelectedUser(init)
+      setUserFormats(formats)
     })
   }, [])
 
@@ -34,12 +39,19 @@ function ExportDialog({ year, month, onClose, onDone }: Props) {
     setError('')
     setRunning(true)
     try {
-      const chosen = Object.entries(selectedUser)
+      const chosenOriginal: string[] = []
+      const chosenPdf: string[] = []
+      Object.entries(selectedUser)
         .filter(([, v]) => v)
-        .map(([k]) => k)
+        .forEach(([name]) => {
+          const fmt = userFormats[name] || 'original'
+          if (fmt === 'original' || fmt === 'both') chosenOriginal.push(name)
+          if (fmt === 'pdf' || fmt === 'both') chosenPdf.push(name)
+        })
       const files = await window.api.export.generate(year, month, {
         builtin: { excel: builtinExcel, pdf: builtinPdf },
-        userTemplates: chosen,
+        userTemplates: chosenOriginal,
+        userTemplatesPdf: chosenPdf,
       })
       onDone(files)
     } catch {
@@ -50,6 +62,10 @@ function ExportDialog({ year, month, onClose, onDone }: Props) {
 
   function toggleUser(name: string) {
     setSelectedUser((s) => ({ ...s, [name]: !s[name] }))
+  }
+
+  function setFormat(name: string, fmt: ExportFormat) {
+    setUserFormats((s) => ({ ...s, [name]: fmt }))
   }
 
   return (
@@ -84,19 +100,32 @@ function ExportDialog({ year, month, onClose, onDone }: Props) {
             ) : (
               <div className="space-y-1">
                 {userTemplates.map((tpl) => (
-                  <label key={tpl.name} className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={!!selectedUser[tpl.name]}
-                      onChange={() => toggleUser(tpl.name)}
-                    />
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                      tpl.type === 'word' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-                    }`}>
-                      {tpl.type === 'word' ? 'DOCX' : 'XLSX'}
-                    </span>
-                    <span className="text-sm truncate">{tpl.name}</span>
-                  </label>
+                  <div key={tpl.name} className="flex items-center gap-2 p-2 rounded hover:bg-gray-50">
+                    <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={!!selectedUser[tpl.name]}
+                        onChange={() => toggleUser(tpl.name)}
+                      />
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded shrink-0 ${
+                        tpl.type === 'word' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+                      }`}>
+                        {tpl.type === 'word' ? 'DOCX' : 'XLSX'}
+                      </span>
+                      <span className="text-sm truncate">{tpl.name}</span>
+                    </label>
+                    {selectedUser[tpl.name] && (
+                      <select
+                        className="text-xs border border-gray-300 rounded px-1.5 py-0.5 bg-white shrink-0"
+                        value={userFormats[tpl.name] || 'original'}
+                        onChange={(e) => setFormat(tpl.name, e.target.value as ExportFormat)}
+                      >
+                        <option value="original">{t('exportDialog.formatOriginal')}</option>
+                        <option value="pdf">PDF</option>
+                        <option value="both">{t('exportDialog.formatBoth')}</option>
+                      </select>
+                    )}
+                  </div>
                 ))}
               </div>
             )}

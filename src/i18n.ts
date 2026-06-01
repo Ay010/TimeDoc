@@ -261,6 +261,8 @@ const de: Record<string, string> = {
   'exportDialog.noUserTemplates': 'Noch keine eigenen Vorlagen hochgeladen.',
   'exportDialog.cancel': 'Abbrechen',
   'exportDialog.run': 'Jetzt exportieren',
+  'exportDialog.formatOriginal': 'Original',
+  'exportDialog.formatBoth': 'Beide',
 
   // TitleBar
   'titlebar.minimize': 'Minimieren',
@@ -568,6 +570,8 @@ const en: Record<string, string> = {
   'exportDialog.noUserTemplates': 'No custom templates uploaded yet.',
   'exportDialog.cancel': 'Cancel',
   'exportDialog.run': 'Export now',
+  'exportDialog.formatOriginal': 'Original',
+  'exportDialog.formatBoth': 'Both',
 
   // TitleBar
   'titlebar.minimize': 'Minimize',

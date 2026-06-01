@@ -2,6 +2,7 @@ import fs from 'fs'
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
 import ExcelJS from 'exceljs'
+import mammoth from 'mammoth'
 
 interface Entry {
   date: string
@@ -208,4 +209,66 @@ export async function exportExcel(
   }
 
   await workbook.xlsx.writeFile(outputPath)
+}
+
+export async function docxToHtml(docxPath: string): Promise<string> {
+  const buffer = fs.readFileSync(docxPath)
+  const result = await mammoth.convertToHtml({ buffer })
+  return `<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; color: #111827; padding: 32px; margin: 0; background: #fff; font-size: 12px; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { border: 1px solid #9ca3af; padding: 6px 8px; text-align: left; }
+  th { background: #f3f4f6; font-weight: 600; }
+  p { margin: 4px 0; }
+  h1, h2, h3 { margin: 16px 0 8px; }
+</style>
+</head>
+<body>${result.value}</body>
+</html>`
+}
+
+export async function xlsxToHtml(xlsxPath: string): Promise<string> {
+  const workbook = new ExcelJS.Workbook()
+  await workbook.xlsx.readFile(xlsxPath)
+
+  const sheets: string[] = []
+  for (const worksheet of workbook.worksheets) {
+    const rows: string[] = []
+    worksheet.eachRow((row) => {
+      const cells: string[] = []
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        let val = ''
+        if (cell.value !== null && cell.value !== undefined) {
+          if (typeof cell.value === 'object' && 'richText' in (cell.value as any)) {
+            val = ((cell.value as any).richText || []).map((p: any) => p.text || '').join('')
+          } else {
+            val = String(cell.value)
+          }
+        }
+        const escaped = val.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        cells.push(`<td>${escaped}</td>`)
+      })
+      rows.push(`<tr>${cells.join('')}</tr>`)
+    })
+    if (rows.length > 0) {
+      sheets.push(`<table>${rows.join('')}</table>`)
+    }
+  }
+
+  return `<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; color: #111827; padding: 24px; margin: 0; background: #fff; font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  td { border: 1px solid #d1d5db; padding: 4px 6px; white-space: nowrap; }
+</style>
+</head>
+<body>${sheets.join('')}</body>
+</html>`
 }

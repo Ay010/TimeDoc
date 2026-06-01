@@ -92,6 +92,7 @@ declare global {
           selection?: {
             builtin?: { excel?: boolean; pdf?: boolean }
             userTemplates?: string[] | null
+            userTemplatesPdf?: string[] | null
           }
         ) => Promise<string[]>
         openFolder: () => Promise<void>

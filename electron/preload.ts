@@ -58,6 +58,7 @@ contextBridge.exposeInMainWorld('api', {
     generate: (year: number, month: number, selection?: {
       builtin?: { excel?: boolean; pdf?: boolean }
       userTemplates?: string[] | null
+      userTemplatesPdf?: string[] | null
     }) => ipcRenderer.invoke('export:generate', year, month, selection),
     openFolder: () => ipcRenderer.invoke('export:openFolder'),
   },
